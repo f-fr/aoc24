@@ -1,0 +1,10 @@
+syntax: glob
+
+bin/
+units/
+fpmake
+
+manifest.xml
+*.fpm
+*.o
+*.ppu

@@ -94,14 +94,14 @@ type
       function Run(input: TStream): TResult; override;
    end;
 
-   procedure RegisterDay(day: TDay; run: TStreamRunFunction);
-   procedure RegisterDay(day: TDay; run: TStringsRunFunction);
-   procedure RegisterDay(day: TDay; run: TGridRunFunction);
-   procedure RunDay(day: TDay; const inputFileName: String);
+   procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer = 1);
+   procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer = 1);
+   procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer = 1);
+   procedure RunDay(day: TDay; version: Integer; const inputFileName: String);
 
 implementation
 
-uses SysUtils, DateUtils;
+uses SysUtils, StrUtils, DateUtils, Math;
 
 { TNamesBag }
 
@@ -197,39 +197,47 @@ begin
 end;
 
 var
-   days: array[TDay] of TRunner;
+   days: array[TDay] of array of TRunner;
 
-procedure RegisterDay(day: TDay; run: TStreamRunFunction);
+procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer);
 begin
-   days[day] := TStreamRunner.Create(run);
+   assert(Version > 0);
+   SetLength(days[day], Max(Version, Length(days[day])));
+   days[day][Version-1] := TStreamRunner.Create(run);
 end;
 
-procedure RegisterDay(day: TDay; run: TStringsRunFunction);
+procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer);
 begin
-   days[day] := TStringsRunner.Create(run);
+   assert(Version > 0);
+   SetLength(days[day], Max(Version, Length(days[day])));
+   days[day][Version-1] := TStringsRunner.Create(run);
 end;
 
-procedure RegisterDay(day: TDay; run: TGridRunFunction);
+procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer);
 begin
-   days[day] := TGridRunner.Create(run);
+   assert(Version > 0);
+   SetLength(days[day], Max(Version, Length(days[day])));
+   days[day][Version-1] := TGridRunner.Create(run);
 end;
 
-procedure RunDay(day: TDay; const inputFileName: String);
+procedure RunDay(day: TDay; Version: Integer; const inputFileName: String);
 var
    input: TStream = nil;
    res: TResult;
    starttime, endtime: TDateTime;
 begin
    try
-      if days[day] = nil then
-         raise Exception.CreateFmt('No runner for day %d found', [day]);
+      if (Version <= 0) or (Version > Length(days[day])) or not assigned(days[day][Version-1]) then
+         raise Exception.CreateFmt('No runner for day %d, version %d found', [day, Version]);
 
       input := TFileStream.Create(inputFileName, fmOpenRead);
       starttime := Now;
-      res := days[day].Run(input);
+      res := days[day][Version-1].Run(input);
       endtime := Now;
-      writeln(Format('day: %2d   part1: %10d  part2: %10d   time:%.3g',
-                     [day, res[1], res[2], MillisecondsBetween(starttime, endtime) / 1000]));
+      writeln(Format('day: %2d %s  part1: %10d  part2: %10d   time:%.3g',
+                     [day,
+                      IfThen(Version > 1, Format('v%d', [Version]), '  '),
+                      res[1], res[2], MillisecondsBetween(starttime, endtime) / 1000]));
    finally
       input.Free;
    end;

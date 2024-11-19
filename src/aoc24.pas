@@ -25,11 +25,15 @@ uses Aoc, CmdArgs, Day01;
 var
    args: TCmdArgs;
    day: Integer;
+   version: Integer = 1;
+   have_version: TOpt;
    inputFileName: String;
 begin
    args.addParam('DAY', 'Day to run').arg(day).required;
    args.addParam('INPUT-FILE', 'Input file to read').arg(inputFileName).required;
+   have_version := args.add('v', 'version', 'Version of day to be run (default: 1)').arg(version);
    args.addHelp;
+
 
    try
       args.parse;
@@ -44,5 +48,7 @@ begin
       end;
    end;
 
-   RunDay(day, inputFileName);
+   if not have_version.seen then version := 1;
+
+   RunDay(day, Version, inputFileName);
 end.

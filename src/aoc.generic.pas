@@ -119,6 +119,10 @@ type
    private
       Fnrows: Cardinal;
       Fncols: Cardinal;
+      Fstart: Cardinal;
+      Fskip: Cardinal;
+      Fboundary: T;
+      FhasBoundary: Boolean;
       Fitems: array of T;
 
    private
@@ -128,13 +132,14 @@ type
       function GetRow(i: Cardinal): TRow; inline;
       function GetCol(j: Cardinal): TCol; inline;
 
+      procedure SetBoundary(ABoundary: T);
+
    public
       constructor Create(nrows: Cardinal = 0; ncols: Cardinal = 0);
       constructor ReadFromStream(input: TStream);
-      constructor ReadFromStreamWithBoundary(input: TStream; Boundary: T);
 
       procedure LoadFromStream(input: TStream);
-      procedure LoadFromStreamWithBoundary(input: TStream; Boundary: T);
+      procedure NoBoundary;
 
       function Rows: TRowEnum;
       function Cols: TColEnum;
@@ -146,6 +151,8 @@ type
       property Items[i: Cardinal; j: Cardinal]: T read GetItem write SetItem;
       property Row[i: Cardinal]: TRow read GetRow;
       property Col[j: Cardinal]: TCol read GetCol;
+      property Boundary: T read Fboundary write SetBoundary;
+      property HasBoundary: Boolean read FhasBoundary;
    end;
 
    generic function GCD<T>(a, b: T): T; 
@@ -228,7 +235,10 @@ begin
    inherited Create;
    Fnrows := nrows;
    Fncols := ncols;
-   SetLength(Fitems, Fnrows * Fncols);
+   Fskip := Fncols + 2;
+   SetLength(Fitems, (Fnrows + 2) * (Fncols + 2));
+   Fstart := Fskip + 1; // no boundary by default
+   FhasBoundary := False;
 end;
 
 constructor TGenGrid.ReadFromStream(input: TStream);
@@ -237,47 +247,7 @@ begin
    LoadFromStream(input);
 end;
 
-constructor TGenGrid.ReadFromStreamWithBoundary(input: TStream; Boundary: T);
-begin
-   Create;
-   LoadFromStreamWithBoundary(input, Boundary);
-end;
-
 procedure TGenGrid.LoadFromStream(input: TStream);
-var
-   lines: TStringList = nil;
-   line: String;
-begin
-   Fnrows := 0;
-   Fncols := 0;
-   try
-      lines := TStringList.Create;
-      lines.LoadFromStream(input, True); // ignore the encoding
-      if lines.Count = 0 then begin
-         Fitems := nil;
-         exit;
-      end;
-      Fncols := Length(lines[0]);
-
-      SetLength(Fitems, Fncols * lines.Count);
-
-      for line in lines do begin
-         if Length(line) = 0 then break;
-
-         if Length(line) <> Fncols then
-            raise EReadError.CreateFmt('Row %d of grid has invalid length (got: %d, expected: %d)',
-                                       [Fnrows + 1, Length(line), Fncols]);
-
-         move(line[1], Fitems[Fnrows * Fncols], Fncols);
-
-         Inc(Fnrows);
-      end;
-   finally
-      lines.Free;
-   end;
-end;
-
-procedure TGenGrid.LoadFromStreamWithBoundary(input: TStream; boundary: T);
 var
    lines: TStringList = nil;
    line: String;
@@ -295,7 +265,7 @@ begin
       Fncols := Length(lines[0]) + 2;
 
       SetLength(Fitems, Fncols * (lines.Count + 2));
-      for i := 0 to Fncols - 1 do Fitems[i] := boundary;
+      for i := 0 to Fncols - 1 do Fitems[i] := Fboundary;
       Inc(Fnrows);
 
       j := Fncols;
@@ -306,40 +276,81 @@ begin
             raise EReadError.CreateFmt('Row %d of grid has invalid length (got: %d, expected: %d)',
                                        [Fnrows, Length(line), Fncols - 2]);
 
-         Fitems[j] := boundary;
+         Fitems[j] := Fboundary;
          move(line[1], Fitems[j + 1], (Fncols - 2));
-         Fitems[j + Fncols - 1] := boundary;
+         Fitems[j + Fncols - 1] := Fboundary;
          Inc(j, Fncols);
 
          Inc(Fnrows);
       end;
 
-      for i := 0 to Fncols - 1 do Fitems[j + i] := Boundary;
+      for i := 0 to Fncols - 1 do Fitems[j + i] := Fboundary;
       Inc(Fnrows);
+
+      Fskip := Fncols;
+
+      if HasBoundary then
+         Fstart := 0
+      else begin
+         Fstart := Fskip + 1;
+         Fnrows -= 2;
+         Fncols -= 2;
+      end;
    finally
       lines.Free;
    end;
+end;
+
+procedure TGenGrid.SetBoundary(ABoundary: T);
+var
+   i: Integer;
+begin
+   if not HasBoundary or (ABoundary <> Fboundary) then begin
+      Fboundary := Aboundary;
+      if not HasBoundary then begin
+         Fnrows += 2;
+         Fncols += 2;
+         Fstart := 0;
+         FhasBoundary := True;
+      end;
+      for i := 0 to Fncols - 1 do Fitems[i] := Fboundary;
+      for i := 1 to Fnrows - 2 do begin
+         Fitems[i * Fskip] := Fboundary;
+         Fitems[(i + 1) * Fskip - 1] := Fboundary;
+      end;
+      for i := Fskip * (Fnrows - 1) to Fskip * Fnrows - 1 do Fitems[i] := Fboundary;
+   end;
+end;
+
+procedure TGenGrid.NoBoundary;
+begin
+   if HasBoundary then begin
+      Fnrows -= 2;
+      Fncols -= 2;
+      Fstart := Fskip + 1;
+      FhasBoundary := False;
+   end
 end;
 
 function TGenGrid.GetItem(i, j: Cardinal): T;
 begin
    assert(i < Fnrows);
    assert(j < Fncols);
-   result := Fitems[i * Fncols + j];
+   result := Fitems[Fstart + i * Fskip + j];
 end;
 
 procedure TGenGrid.SetItem(i, j: Cardinal; value: T);
 begin
    assert(i < Fnrows);
    assert(j < Fncols);
-   Fitems[i * Fncols + j] := value;
+   Fitems[Fstart + i * Fncols + j] := value;
 end;
 
 function TGenGrid.GetRow(i: Cardinal): TRow;
 begin
    assert(i < Fnrows);
    result.Findex := i;
-   result.Fitems := @Fitems[i * Fncols];
+   result.Fitems := @Fitems[Fstart + i * Fskip];
    result.Flen := Fncols;
 end;
 
@@ -347,9 +358,9 @@ function TGenGrid.GetCol(j: Cardinal): TCol;
 begin
    assert(j < Fncols);
    result.Findex := j;
-   result.Fitems := @Fitems[j];
+   result.Fitems := @Fitems[Fstart + j];
    result.Flen := Fnrows;
-   result.Fskip := Fncols;
+   result.Fskip := Fskip;
 end;
 
 function TGenGrid.Rows: TRowEnum;

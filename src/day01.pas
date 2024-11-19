@@ -22,13 +22,9 @@ unit Day01;
 
 interface
 
-uses AOC, Classes;
-
-function Run(input: TStream): TResult;
-
 implementation
 
-uses StrUtils, SysUtils, Strings;
+uses AOC, Classes, StrUtils, SysUtils, Strings;
 
 function FindNums(const line: String; fwd, names: Boolean): Int64;
 const
@@ -63,28 +59,21 @@ begin
    raise Exception.Create('No digit found');
 end;
 
-function Run(input: TStream): TResult;
+function Run(lines: TStrings): TResult;
 var
-   lines: TStringList = nil;
    line: String;
    i, j, p: Integer;
 begin
    result[1] := 0;
    result[2] := 0;
 
-   try
-      lines := TStringList.Create;
-      lines.LoadFromStream(input);
-      for line in lines do begin
-         for p := 1 to 2 do begin
-            i := FindNums(line, true, p = 2);
-            j := FindNums(line, false, p = 2);
-            result[p] += 10 * i + j;
-         end;
+   for line in lines do begin
+      for p := 1 to 2 do begin
+         i := FindNums(line, true, p = 2);
+         j := FindNums(line, false, p = 2);
+         result[p] += 10 * i + j;
       end;
-   finally
-      lines.Free;
-   end
+   end;
 end;
 
 initialization

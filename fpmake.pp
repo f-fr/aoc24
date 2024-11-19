@@ -13,7 +13,11 @@ begin
       p.dependencies.add('rtl-generics');
       p.dependencies.add('cmdargs');
       p.options.add('-Sc');
-      p.targets.AddProgram('src/aoc24.pas');
+      p.SourcePath.Add('src');
+      p.targets.AddProgram('aoc24.pas');
+      p.targets.AddUnit('aoc.pas');
+      p.targets.AddUnit('aoc.generic.pas');
+      p.targets.AddUnit('day01.pas');
       run;
    end
 end.

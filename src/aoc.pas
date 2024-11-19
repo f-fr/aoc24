@@ -31,8 +31,6 @@ type
 
    TDay = 1..25;
 
-   TRunFunction = function (input: TStream): TResult;
-
    TNamesBag = class
    private
       type
@@ -58,7 +56,47 @@ type
    function LCM(a, b: Cardinal): Cardinal; inline;
    function CRT(a, m: array of Integer; out x: Integer): Boolean;
 
-   procedure RegisterDay(day: TDay; run: TRunFunction);
+   { Runner specific helpers }
+
+type
+   TStreamRunFunction = function (input: TStream): TResult;
+   TStringsRunFunction = function (input: TStrings): TResult;
+   TGridRunFunction = function (input: TGrid): TResult;
+
+   TRunner = class
+      function Run(stream: TStream): TResult; virtual; abstract;
+   end;
+
+   TStreamRunner = class(TRunner)
+   private
+      Frun: TStreamRunFunction;
+
+   public
+      constructor Create(ARun: TStreamRunFunction);
+      function Run(input: TStream): TResult; override;
+   end;
+
+   TStringsRunner = class(TRunner)
+   private
+      Frun: TStringsRunFunction;
+
+   public
+      constructor Create(ARun: TStringsRunFunction);
+      function Run(input: TStream): TResult; override;
+   end;
+
+   TGridRunner = class(TRunner)
+   private
+      Frun: TGridRunFunction;
+
+   public
+      constructor Create(ARun: TGridRunFunction);
+      function Run(input: TStream): TResult; override;
+   end;
+
+   procedure RegisterDay(day: TDay; run: TStreamRunFunction);
+   procedure RegisterDay(day: TDay; run: TStringsRunFunction);
+   procedure RegisterDay(day: TDay; run: TGridRunFunction);
    procedure RunDay(day: TDay; const inputFileName: String);
 
 implementation
@@ -107,13 +145,73 @@ begin
    result := specialize CRT<Integer>(a, m, x);
 end;
 
+{ TStreamRunner }
+
+constructor TStreamRunner.Create(ARun: TStreamRunFunction);
+begin
+   Frun := Arun;
+end;
+
+function TStreamRunner.Run(input: TStream): TResult;
+begin
+   result := Frun(input);
+end;
+
+{ TStringsRunner }
+
+constructor TStringsRunner.Create(ARun: TStringsRunFunction);
+begin
+   Frun := Arun;
+end;
+
+function TStringsRunner.Run(input: TStream): TResult;
+var
+   strings: TStringList = nil;
+begin
+   try
+      strings := TStringList.Create;
+      strings.LoadFromStream(input);
+      result := Frun(strings);
+   finally
+      strings.Free;
+   end;
+end;
+
+{ TGridRunner }
+
+constructor TGridRunner.Create(ARun: TGridRunFunction);
+begin
+   Frun := Arun;
+end;
+
+function TGridRunner.Run(input: TStream): TResult;
+var
+   grid: TGrid = nil;
+begin
+   try
+      grid := TGrid.ReadFromStream(input);
+      result := Frun(grid);
+   finally
+      grid.Free;
+   end;
+end;
 
 var
-   days: array[TDay] of TRunFunction;
+   days: array[TDay] of TRunner;
 
-procedure RegisterDay(day: TDay; run: TRunFunction);
+procedure RegisterDay(day: TDay; run: TStreamRunFunction);
 begin
-   days[day] := run;
+   days[day] := TStreamRunner.Create(run);
+end;
+
+procedure RegisterDay(day: TDay; run: TStringsRunFunction);
+begin
+   days[day] := TStringsRunner.Create(run);
+end;
+
+procedure RegisterDay(day: TDay; run: TGridRunFunction);
+begin
+   days[day] := TGridRunner.Create(run);
 end;
 
 procedure RunDay(day: TDay; const inputFileName: String);
@@ -128,7 +226,7 @@ begin
 
       input := TFileStream.Create(inputFileName, fmOpenRead);
       starttime := Now;
-      res := days[day](input);
+      res := days[day].Run(input);
       endtime := Now;
       writeln(Format('day: %2d   part1: %10d  part2: %10d   time:%.3g',
                      [day, res[1], res[2], MillisecondsBetween(starttime, endtime) / 1000]));

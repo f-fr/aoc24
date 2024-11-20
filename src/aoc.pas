@@ -23,7 +23,7 @@ unit AOC;
 
 interface
 
-uses AOC.Generic, generics.collections, Classes;
+uses AOC.Generic, generics.collections, Classes, StreamEx;
 
 type
 
@@ -64,6 +64,7 @@ type
 type
    TStreamRunFunction = function (input: TStream): TResult;
    TStringsRunFunction = function (input: TStrings): TResult;
+   TTextReaderRunFunction = function (input: TTextReader): TResult;
    TGridRunFunction = function (input: TGrid): TResult;
 
    TRunner = class
@@ -76,6 +77,15 @@ type
 
    public
       constructor Create(ARun: TStreamRunFunction);
+      function Run(input: TStream): TResult; override;
+   end;
+
+   TTextReaderRunner = class(TRunner)
+   private
+      Frun: TTextReaderRunFunction;
+
+   public
+      constructor Create(ARun: TTextReaderRunFunction);
       function Run(input: TStream): TResult; override;
    end;
 
@@ -98,6 +108,7 @@ type
    end;
 
    procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer = 1);
+   procedure RegisterDay(day: TDay; run: TTextReaderRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer = 1);
    procedure RunDay(day: TDayOrZero; version: Integer; const inputFileName: String);
@@ -160,6 +171,25 @@ begin
    result := Frun(input);
 end;
 
+{ TTextReaderRunner }
+
+constructor TTextReaderRunner.Create(ARun: TTextReaderRunFunction);
+begin
+   Frun := Arun;
+end;
+
+function TTextReaderRunner.Run(input: TStream): TResult;
+var
+   reader: TTextReader = nil;
+begin
+   try
+      reader := TStreamReader.Create(input);
+      result := Frun(reader);
+   finally
+      reader.Free;
+   end;
+end;
+
 { TStringsRunner }
 
 constructor TStringsRunner.Create(ARun: TStringsRunFunction);
@@ -213,6 +243,11 @@ end;
 procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer);
 begin
    RegisterDay(day, TStreamRunner.Create(run), Version);
+end;
+
+procedure RegisterDay(day: TDay; run: TTextReaderRunFunction; Version: Integer);
+begin
+   RegisterDay(day, TTextReaderRunner.Create(run), Version);
 end;
 
 procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer);

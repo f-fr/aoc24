@@ -24,7 +24,7 @@ interface
 
 implementation
 
-uses AOC, Classes, StrUtils, SysUtils, Strings;
+uses AOC, Classes, StrUtils, SysUtils, Strings, StreamEx;
 
 function FindNums(const line: String; fwd, names: Boolean): Int64;
 const
@@ -59,7 +59,7 @@ begin
    result := 100; // nothing found, return a large number
 end;
 
-function Run(lines: TStrings): TResult;
+function Run(lines: TTextReader): TResult;
 var
    line: String;
    i, j, p: Integer;
@@ -67,7 +67,8 @@ begin
    result[1] := 0;
    result[2] := 0;
 
-   for line in lines do begin
+   while not lines.Eof do begin
+      lines.ReadLine(line);
       for p := 1 to 2 do begin
          i := FindNums(line, true, p = 2);
          j := FindNums(line, false, p = 2);

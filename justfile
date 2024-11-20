@@ -1,11 +1,14 @@
 build:
-	fppkg compile -c debug
+    mkdir -p bin/x86_64-linux
+    fpc -dDEBUG -obin/x86_64-linux/aoc24 -Fusrc src/aoc24
 
 release:
-	fppkg compile -c release
+    mkdir -p bin/x86_64-linux
+    fpc -dRELEASE -obin/x86_64-linux/aoc24 -Fusrc src/aoc24
 
 llvm:
-	fppkg-llvm compile
+    mkdir -p bin/x86_64-linux
+    fpc-llvm -dRELEASE -obin/x86_64-linux/aoc24 -Fusrc src/aoc24
 
 clean:
     fppkg clean

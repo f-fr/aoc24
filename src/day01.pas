@@ -56,7 +56,7 @@ begin
          if result >= 0 then exit;
       end;
 
-   raise Exception.Create('No digit found');
+   result := 100; // nothing found, return a large number
 end;
 
 function Run(lines: TStrings): TResult;

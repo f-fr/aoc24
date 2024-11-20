@@ -20,7 +20,7 @@
 
 program Aoc24;
 
-uses SysUtils, Aoc {$include days.inc};
+uses SysUtils, Aoc, Aoc.Tests {$include days.inc};
 
 procedure Fail(const msg: String);
 begin
@@ -76,11 +76,10 @@ begin
    end;
 
    {$ifdef DEBUG}
-   RunDay(day, Version, inputFileName);
-   {$else}
    try
+   {$endif}
       RunDay(day, Version, inputFileName);
-
+   {$ifdef DEBUG}
    except
       on e: Exception do begin
          writeln(stderr, 'ERROR: ', e.Message);

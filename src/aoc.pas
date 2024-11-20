@@ -104,7 +104,7 @@ type
 
 implementation
 
-uses SysUtils, StrUtils, DateUtils, Math;
+uses Aoc.Tests, SysUtils, StrUtils, DateUtils, Math;
 
 { TNamesBag }
 
@@ -207,6 +207,7 @@ begin
    assert(Version > 0);
    SetLength(days[day], Max(Version, Length(days[day])));
    days[day][Version-1] := runner;
+   AddTest(day, runner);
 end;
 
 procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer);

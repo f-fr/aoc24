@@ -1,7 +1,7 @@
 build:
     mkdir -p bin/x86_64-linux-debug
     mkdir -p units/x86_64-linux-debug
-    fpc -dDEBUG -FEbin/x86_64-linux-debug -FUunits/x86_64-linux-debug -Fusrc src/aoc24
+    fpc -dDEBUG -gh -FEbin/x86_64-linux-debug -FUunits/x86_64-linux-debug -Fusrc src/aoc24
 
 release:
     mkdir -p bin/x86_64-linux-release

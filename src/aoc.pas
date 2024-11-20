@@ -31,6 +31,9 @@ type
 
    TDay = 1..25;
 
+   { 0 means "all days" }
+   TDayOrZero = 0..25;
+
    TNamesBag = class
    private
       type
@@ -97,7 +100,7 @@ type
    procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer = 1);
-   procedure RunDay(day: Integer; version: Integer; const inputFileName: String);
+   procedure RunDay(day: TDayOrZero; version: Integer; const inputFileName: String);
 
 implementation
 
@@ -220,7 +223,7 @@ begin
    days[day][Version-1] := TGridRunner.Create(run);
 end;
 
-procedure RunDay(day: Integer; Version: Integer; const inputFileName: String);
+procedure RunDay(day: TDayOrZero; Version: Integer; const inputFileName: String);
 var
    input: TStream = nil;
    res: TResult;

@@ -20,7 +20,7 @@
 
 program Aoc24;
 
-uses SysUtils, Aoc, Day01;
+uses SysUtils, Aoc {$include days.inc};
 
 procedure Fail(const msg: String);
 begin

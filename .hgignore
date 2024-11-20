@@ -8,3 +8,6 @@ manifest.xml
 *.fpm
 *.o
 *.ppu
+
+.session
+input/

@@ -20,35 +20,72 @@
 
 program Aoc24;
 
-uses Aoc, CmdArgs, Day01;
+uses SysUtils, Aoc, Day01;
+
+procedure Fail(const msg: String);
+begin
+   writeln(stderr, 'ERROR: ', msg);
+   writeln(stderr, 'Try ', ParamStr(0), ' --help');
+   halt(1);
+end;
+
+procedure Fail(const fmt: String; args: array of const);
+begin
+   writeln(stderr, 'ERROR: ', Format(fmt, args));
+   writeln(stderr, 'Try ', ParamStr(0), ' --help');
+   halt(1);
+end;
+
+procedure ShowHelp;
+begin
+   writeln('Usage: ', ParamStr(0), ' [-v VERSION] [DAY] [INPUT]');
+   writeln;
+   writeln('If no DAY is specified, all days and versions are run.');
+   writeln;
+   writeln('If no INPUT file is specified, the input for each day is assumed to be');
+   writeln('./input/DAY/input1.txt');
+   writeln;
+   writeln('An input file can only be specified for a single day.');
+      
+   halt(0);
+end;
 
 var
-   args: TCmdArgs;
-   day: Integer;
-   version: Integer = 1;
-   have_version: TOpt;
-   inputFileName: String;
+   day: Integer = 0;
+   version: Integer = 0;
+   inputFileName: String = '';
+
+   i: Integer;
 begin
-   args.addParam('DAY', 'Day to run').arg(day).required;
-   args.addParam('INPUT-FILE', 'Input file to read').arg(inputFileName).required;
-   have_version := args.add('v', 'version', 'Version of day to be run (default: 1)').arg(version);
-   args.addHelp;
-
-
-   try
-      args.parse;
-   except
-      on e: ECmdArgs do begin
-         writeln(stderr, 'ERROR: ', e.message);
-         halt(1);
-      end;
-      on e: EHelp do begin
-         writeln(e.message);
-         halt(1);
-      end;
+   i := 1;
+   while i <= ParamCount do begin
+      if (ParamStr(i) = '-h') or (ParamStr(i) = '--help') then
+         ShowHelp
+      else if ParamStr(i) = '-v' then begin
+         Inc(i);
+         if i > ParamCount then Fail('Missing version after -v');
+         if not TryStrToInt(ParamStr(i), Version) then Fail('Invalid version: %s', [ParamStr(i)]);
+      end else if day = 0 then begin
+         if not TryStrToInt(ParamStr(i), day) then Fail('Invalid day: %s', [ParamStr(i)]);
+         if (day < 1) or (day > 25) then Fail('Invalid day, got %d (expected day ∈ {1, …, 25})', [day]);
+      end else if inputFileName <> '' then
+         Fail('Only one INPUT file can be specified')
+      else
+         inputFileName := ParamStr(i);
+      Inc(i);
    end;
 
-   if not have_version.seen then version := 1;
-
+   {$ifdef DEBUG}
    RunDay(day, Version, inputFileName);
+   {$else}
+   try
+      RunDay(day, Version, inputFileName);
+
+   except
+      on e: Exception do begin
+         writeln(stderr, 'ERROR: ', e.Message);
+         halt(1);
+      end;
+   end
+   {$endif}
 end.

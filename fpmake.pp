@@ -11,7 +11,6 @@ begin
       p.license := 'GPLv3';
       p.dependencies.add('rtl-console');
       p.dependencies.add('rtl-generics');
-      p.dependencies.add('cmdargs');
       p.options.add('-Sc');
       p.SourcePath.Add('src');
       p.targets.AddProgram('aoc24.pas');

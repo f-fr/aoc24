@@ -97,7 +97,7 @@ type
    procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer = 1);
-   procedure RunDay(day: TDay; version: Integer; const inputFileName: String);
+   procedure RunDay(day: Integer; version: Integer; const inputFileName: String);
 
 implementation
 
@@ -220,27 +220,54 @@ begin
    days[day][Version-1] := TGridRunner.Create(run);
 end;
 
-procedure RunDay(day: TDay; Version: Integer; const inputFileName: String);
+procedure RunDay(day: Integer; Version: Integer; const inputFileName: String);
 var
    input: TStream = nil;
    res: TResult;
-   starttime, endtime: TDateTime;
-begin
-   try
-      if (Version <= 0) or (Version > Length(days[day])) or not assigned(days[day][Version-1]) then
-         raise Exception.CreateFmt('No runner for day %d, version %d found', [day, Version]);
+   d, ver: Integer;
 
-      input := TFileStream.Create(inputFileName, fmOpenRead);
-      starttime := Now;
-      res := days[day][Version-1].Run(input);
-      endtime := Now;
-      writeln(Format('day: %2d %s  part1: %10d  part2: %10d   time:%.3g',
-                     [day,
-                      IfThen(Version > 1, Format('v%d', [Version]), '  '),
-                      res[1], res[2], MillisecondsBetween(starttime, endtime) / 1000]));
-   finally
-      input.Free;
+   starttime, endtime: TDateTime;
+   dayTime: Double = 0;
+   bestDayTime: Double = 0;
+   totalTime: Double = 0;
+begin
+   if (day < 0) or (day > Length(days)) then
+      raise Exception.CreateFmt('Unknown day: %d', [day]);
+   if day > 0 then begin
+      if (Version < 0) or (Version > Length(days[day])) or ((Version > 0) and not assigned(days[day][Version-1])) then
+         raise Exception.CreateFmt('No runner for day %d, version %d found', [day, Version]);
+   end else begin
+      if Version <> 0 then
+         raise Exception.Create('Version must be 0 specified if running all days');
    end;
+
+   for d := IfThen(day > 0, day, Low(days)) to IfThen(day > 0, day, High(days)) do begin
+      bestDayTime := Infinity;
+      for ver := 1 to Length(days[d]) do begin
+         if (Version > 0) and (Version <> ver) then continue;
+
+         try
+            if inputFileName <> '' then
+               input := TFileStream.Create(inputFileName, fmOpenRead)
+            else
+               input := TFileStream.Create(Format('input/%.2d/input1.txt', [d]), fmOpenRead);
+            starttime := Now;
+            res := days[d][ver-1].Run(input);
+            endtime := Now;
+            dayTime := MillisecondsBetween(starttime, endtime) / 1000;
+            writeln(Format('day: %2d %s  part1: %10d  part2: %10d   time:%.3g',
+                           [d,
+                            IfThen(ver > 1, Format('v%d', [ver]), '  '),
+                            res[1], res[2], dayTime]));
+            bestDayTime := Min(bestDayTime, dayTime);
+         finally
+            FreeAndNil(input);
+         end
+      end;
+      if bestDayTime < Infinity then totalTime += bestDayTime;
+   end;
+
+   if day = 0 then writeln(Format('Total time: %.3g', [totalTime]));
 end;
 
 end.

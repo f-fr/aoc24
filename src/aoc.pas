@@ -310,4 +310,14 @@ begin
    if day = 0 then writeln(Format('Total time: %.3g', [totalTime]));
 end;
 
+var
+   d: TDay;
+   v: Integer;
+finalization
+
+   for d in TDay do begin
+      for v := Low(days[d]) to High(days[d]) do
+         days[d][v].Free;
+   end;
+
 end.

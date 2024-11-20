@@ -202,25 +202,26 @@ end;
 var
    days: array[TDay] of array of TRunner;
 
-procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer);
+procedure RegisterDay(day: TDay; runner: TRunner; Version: Integer);
 begin
    assert(Version > 0);
    SetLength(days[day], Max(Version, Length(days[day])));
-   days[day][Version-1] := TStreamRunner.Create(run);
+   days[day][Version-1] := runner;
+end;
+
+procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer);
+begin
+   RegisterDay(day, TStreamRunner.Create(run), Version);
 end;
 
 procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer);
 begin
-   assert(Version > 0);
-   SetLength(days[day], Max(Version, Length(days[day])));
-   days[day][Version-1] := TStringsRunner.Create(run);
+   RegisterDay(day, TStringsRunner.Create(run), Version);
 end;
 
 procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer);
 begin
-   assert(Version > 0);
-   SetLength(days[day], Max(Version, Length(days[day])));
-   days[day][Version-1] := TGridRunner.Create(run);
+   RegisterDay(day, TGridRunner.Create(run), Version);
 end;
 
 procedure RunDay(day: TDayOrZero; Version: Integer; const inputFileName: String);

@@ -107,6 +107,18 @@ type
       function Run(input: TStream): TResult; override;
    end;
 
+   TTextReaderEnumerator = record
+   private
+      Freader: TTextReader;
+      Fline: String;
+
+   public
+      function MoveNext : Boolean;
+      property Current: String read Fline;
+   end;
+
+   operator enumerator(AReader: TTextReader): TTextReaderEnumerator;
+
    procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TTextReaderRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer = 1);
@@ -227,6 +239,19 @@ begin
    finally
       grid.Free;
    end;
+end;
+
+{ TTextReaderEnumerator }
+
+function TTextReaderEnumerator.MoveNext: Boolean;
+begin
+   result := not Freader.Eof;
+   if result then Freader.ReadLine(Fline);
+end;
+
+operator enumerator(AReader: TTextReader): TTextReaderEnumerator;
+begin
+   result.Freader := AReader;
 end;
 
 var

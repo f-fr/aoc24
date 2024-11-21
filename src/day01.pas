@@ -67,8 +67,7 @@ begin
    result[1] := 0;
    result[2] := 0;
 
-   while not lines.Eof do begin
-      lines.ReadLine(line);
+   for line in lines do begin
       for p := 1 to 2 do begin
          i := FindNums(line, true, p = 2);
          j := FindNums(line, false, p = 2);

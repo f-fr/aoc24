@@ -80,7 +80,7 @@ begin
       mem := TMemoryStream.Create;
       repeat
          input.LoadFromFile(ConcatPaths([dir, info.Name]));
-         if input.Count = 0 then continue; // ignore empty files
+         if input.Count <= 1 then continue; // ignore empty files
          AssertTrue('First test line must be ''EXPECTED: <number>''', StartsText('EXPECTED:', input[0]));
          Expected := StrToInt64(MidStr(input[0], 10, Length(input[0])));
          input.Delete(0);

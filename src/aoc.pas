@@ -272,13 +272,13 @@ var
    totalTime: Double = 0;
 begin
    if (day < 0) or (day > Length(days)) then
-      raise Exception.CreateFmt('Unknown day: %d', [day]);
+      raise EArgumentOutOfRangeException.CreateFmt('Unknown day: %d', [day]);
    if day > 0 then begin
       if (Version < 0) or (Version > Length(days[day])) or ((Version > 0) and not assigned(days[day][Version-1])) then
          raise Exception.CreateFmt('No runner for day %d, version %d found', [day, Version]);
    end else begin
       if Version <> 0 then
-         raise Exception.Create('Version must be 0 specified if running all days');
+         raise EArgumentException.Create('Version must be 0 if running all days');
    end;
 
    for d := IfThen(day > 0, day, Low(days)) to IfThen(day > 0, day, High(days)) do begin

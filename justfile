@@ -13,6 +13,12 @@ llvm:
     mkdir -p units/x86_64-linux-llvm
     fpc-llvm -dRELEASE -O3 -XX -CX -Xs -FEbin/x86_64-linux-llvm -FUunits/x86_64-linux-llvm -Fusrc src/aoc24
 
+run: release
+    bin/x86_64-linux-release/aoc24
+
+run-llvm: llvm
+    bin/x86_64-linux-llvm/aoc24
+
 test:
     mkdir -p bin/x86_64-linux-debug
     mkdir -p units/x86_64-linux-debug

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="12"/>
+    <General>
+      <SessionStorage Value="InProjectDir"/>
+      <Title Value="aoc24testsgui"/>
+      <ResourceType Value="res"/>
+      <UseXPManifest Value="True"/>
+    </General>
+    <BuildModes>
+      <Item Name="Debug" Default="True"/>
+    </BuildModes>
+    <PublishOptions>
+      <Version Value="2"/>
+      <UseFileFilters Value="True"/>
+    </PublishOptions>
+    <RunParams>
+      <FormatVersion Value="2"/>
+    </RunParams>
+    <RequiredPackages>
+      <Item>
+        <PackageName Value="fpcunittestrunner"/>
+      </Item>
+      <Item>
+        <PackageName Value="LCL"/>
+      </Item>
+      <Item>
+        <PackageName Value="FCL"/>
+      </Item>
+    </RequiredPackages>
+    <Units>
+      <Unit>
+        <Filename Value="src/testrunnergui.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="aoc24testsgui"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/aoc.generic.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AOC.Generic"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/aoc.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AOC"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/aoc.tests.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AOC.Tests"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/day01.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Day01"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/days.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <Target>
+      <Filename Value="bin/$(TargetCPU)-$(TargetOS)-debug/aoc24testsgui"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir);src"/>
+      <OtherUnitFiles Value="src"/>
+      <UnitOutputDirectory Value="units/$(TargetCPU)-$(TargetOS)-debug"/>
+    </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <IncludeAssertionCode Value="True"/>
+      </SyntaxOptions>
+    </Parsing>
+    <CodeGeneration>
+      <Checks>
+        <IOChecks Value="True"/>
+        <RangeChecks Value="True"/>
+        <OverflowChecks Value="True"/>
+        <StackChecks Value="True"/>
+      </Checks>
+      <VerifyObjMethodCallValidity Value="True"/>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <DebugInfoType Value="dsDwarf3"/>
+        <UseHeaptrc Value="True"/>
+        <TrashVariables Value="True"/>
+        <UseExternalDbgSyms Value="True"/>
+      </Debugging>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions>
+      <Item>
+        <Name Value="EAbort"/>
+      </Item>
+      <Item>
+        <Name Value="ECodetoolError"/>
+      </Item>
+      <Item>
+        <Name Value="EFOpenError"/>
+      </Item>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

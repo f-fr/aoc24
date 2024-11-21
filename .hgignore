@@ -4,10 +4,12 @@ bin/
 units/
 fpmake
 
+backup/
 manifest.xml
 *.fpm
 *.o
 *.ppu
+*.lps
 
 .session
 input/

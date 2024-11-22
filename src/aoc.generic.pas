@@ -40,13 +40,14 @@ type
       Findex: Cardinal;
 
    private
-      function Get(j: Cardinal): T; inline;
+      function GetItem(j: Cardinal): T; inline;
+      procedure SetItem(j: Cardinal; Value: T); inline;
 
    public
       function ToString: String;
 
       property Index: Cardinal read Findex;
-      property Items[j: Cardinal]: T read Get; default;
+      property Items[j: Cardinal]: T read GetItem write SetItem; default;
    end;
 
    generic TCol<T> = record
@@ -61,13 +62,14 @@ type
       Findex: Cardinal;
 
    private
-      function Get(i: Cardinal): T; inline;
+      function GetItem(i: Cardinal): T; inline;
+      procedure SetItem(i: Cardinal; Value: T); inline;
 
    public
       function ToString: String;
 
       property Index: Cardinal read Findex;
-      property Items[i: Cardinal]: T read Get; default;
+      property Items[i: Cardinal]: T read GetItem write SetItem; default;
    end;
 
    generic TRowEnum<T> = record
@@ -164,10 +166,16 @@ implementation
 
 { TRow }
 
-function TRow.Get(j: Cardinal): T; inline;
+function TRow.GetItem(j: Cardinal): T; inline;
 begin
    assert(j < Flen);
    result := Fitems[j];
+end;
+
+procedure TRow.SetItem(j: Cardinal; Value: T);
+begin
+   assert(j < Flen);
+   Fitems[j] := Value;
 end;
 
 function TRow.ToString: String;
@@ -177,10 +185,16 @@ begin
 end;
 
 { TCol }
-function TCol.Get(i: Cardinal): T; inline;
+function TCol.GetItem(i: Cardinal): T; inline;
 begin
    assert(i < Flen);
    result := Fitems[i * Fskip];
+end;
+
+procedure TCol.SetItem(i: Cardinal; Value: T);
+begin
+   assert(i < Flen);
+   Fitems[i * Fskip] := Value;
 end;
 
 function TCol.ToString: String;

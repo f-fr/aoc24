@@ -98,6 +98,12 @@
         </Win32>
       </Options>
     </Linking>
+    <Other>
+      <CustomOptions Value="-dTESTING"/>
+      <OtherDefines Count="1">
+        <Define0 Value="TESTING"/>
+      </OtherDefines>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions>

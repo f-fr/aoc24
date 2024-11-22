@@ -127,7 +127,8 @@ type
 
 implementation
 
-uses Aoc.Tests, SysUtils, StrUtils, DateUtils, Math;
+uses Aoc.Tests, SysUtils, StrUtils, DateUtils, Math
+     {$ifdef TESTING}, fpcUnit, TestRegistry{$endif};
 
 { TNamesBag }
 
@@ -335,9 +336,20 @@ begin
    if day = 0 then writeln(Format('Total time: %.3g', [totalTime]));
 end;
 
+{$ifdef TESTING}
+{$include tests_aoc.inc}
+{$endif TESTING}
+
 var
    d: TDay;
    v: Integer;
+
+initialization
+
+{$ifdef TESTING}
+   RegisterTests;
+{$endif}
+
 finalization
 
    for d in TDay do begin

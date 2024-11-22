@@ -46,7 +46,7 @@ type
       function ToString: String;
 
       property Index: Cardinal read Findex;
-      property Items[j: Cardinal]: T read Get;
+      property Items[j: Cardinal]: T read Get; default;
    end;
 
    generic TCol<T> = record
@@ -67,7 +67,7 @@ type
       function ToString: String;
 
       property Index: Cardinal read Findex;
-      property Items[i: Cardinal]: T read Get;
+      property Items[i: Cardinal]: T read Get; default;
    end;
 
    generic TRowEnum<T> = record
@@ -148,7 +148,7 @@ type
 
       property N: Cardinal read Fnrows;
       property M: Cardinal read Fncols;
-      property Items[i: Cardinal; j: Cardinal]: T read GetItem write SetItem;
+      property Items[i: Cardinal; j: Cardinal]: T read GetItem write SetItem; default;
       property Row[i: Cardinal]: TRow read GetRow;
       property Col[j: Cardinal]: TCol read GetCol;
       property Boundary: T read Fboundary write SetBoundary;

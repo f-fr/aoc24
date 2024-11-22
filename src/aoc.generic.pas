@@ -357,7 +357,7 @@ procedure TGenGrid.SetItem(i, j: Cardinal; value: T);
 begin
    assert(i < Fnrows);
    assert(j < Fncols);
-   Fitems[Fstart + i * Fncols + j] := value;
+   Fitems[Fstart + i * Fskip + j] := value;
 end;
 
 function TGenGrid.GetRow(i: Cardinal): TRow;

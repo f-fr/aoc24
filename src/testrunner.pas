@@ -20,7 +20,7 @@
 
 program TestRunner;
 
-uses ConsoleTestRunner {$include days.inc};
+uses ConsoleTestRunner, Aoc {$include days.inc};
 
 var
    app: TTestRunner;

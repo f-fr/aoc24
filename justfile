@@ -27,7 +27,7 @@ test:
 
 clean:
     fppkg clean
-    rm -rf fpmake
+    rm -f fpmake fpmake.o
     rm -rf bin units
     rm -f src/*.o
     rm -f src/*.ppu

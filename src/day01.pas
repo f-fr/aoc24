@@ -24,7 +24,10 @@ interface
 
 implementation
 
-uses AOC, Classes, SysUtils, StreamEx;
+uses AOC, Classes, SysUtils, StreamEx, generics.collections;
+
+type
+   TIntDict = specialize TDictionary<Integer, Integer>;
 
 function Run(input: TTextReader): TResult;
 var
@@ -72,8 +75,64 @@ begin
    end
 end;
 
+function Tally(ns: TIntList): TIntDict;
+var
+   i, cnt: Integer;
+begin
+   result := nil;
+   try
+      result := TIntDict.Create;
+      for i in ns do
+         if result.TryGetValue(i, cnt) then
+            result[i] := cnt + 1
+         else
+            result.Add(i, 1);
+   except
+      result.Free;
+      raise;
+   end
+end;
+
+function Run2(input: TTextReader): TResult;
+var
+   line: String;
+   toks: array of String;
+   ns, ms: TIntList;
+   i, j: Integer;
+   nscnt, mscnt: TIntDict;
+   pair: TIntDict.TDictionaryPair;
+begin
+   try
+      ns := TIntList.Create;
+      ms := TIntList.Create;
+      for line in input do begin
+         toks := line.Split(' ', TStringSplitOptions.ExcludeEmpty);
+         ns.Add(toks[0].ToInteger);
+         ms.Add(toks[1].ToInteger);
+      end;
+
+      ns.Sort;
+      ms.Sort;
+      result[1] := 0;
+      for i := 0 to ns.Count - 1 do result[1] += Abs(ns[i] - ms[i]);
+
+      // use the "tally" function, which basically just counts
+      nscnt := Tally(ns);
+      mscnt := Tally(ms);
+      result[2] := 0;
+      for pair in nscnt do
+         if mscnt.TryGetValue(pair.Key, j) then
+            result[2] += pair.Key * pair.Value * j;
+   finally
+      ns.Free;
+      ms.Free;
+      mscnt.Free;
+      nscnt.Free;
+   end
+end;
 initialization
 
    RegisterDay(01, @Run, 1);
+   RegisterDay(01, @Run2, 2);
 
 end.

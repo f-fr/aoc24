@@ -22,7 +22,7 @@ run-llvm: llvm
 test:
     mkdir -p bin/x86_64-linux-debug
     mkdir -p units/x86_64-linux-debug
-    fpc -dDEBUG -dTESTING -oaoc24tests -FEbin/x86_64-linux-debug -FUunits/x86_64-linux-debug -Fusrc src/testrunner
+    fpc -dDEBUG -dTESTING -gh -oaoc24tests -FEbin/x86_64-linux-debug -FUunits/x86_64-linux-debug -Fusrc src/testrunner
     bin/x86_64-linux-debug/aoc24tests --format=plain --all
 
 clean:

@@ -130,9 +130,54 @@ begin
       nscnt.Free;
    end
 end;
+
+// Version 1 but taking input as TStrings.
+// For the numbers we use arrays instead of TIntList.
+function Run3(input: TStrings): TResult;
+var
+   line: String;
+   toks: array of String;
+   ns, ms: array of Integer;
+   i, j, k: Integer;
+begin
+   SetLength(ns, input.Count);
+   SetLength(ms, input.Count);
+   for i := 0 to input.Count - 1 do begin
+      toks := input[i].Split(' ', TStringSplitOptions.ExcludeEmpty);
+      ns[i] := toks[0].toInteger;
+      ms[i] := toks[1].toInteger;
+   end;
+
+   TIntArrayHelper.Sort(ns);
+   TIntArrayHelper.Sort(ms);
+
+   result[1] := 0;
+   for i := 0 to High(ns) do result[1] += Abs(ns[i] - ms[i]);
+
+   result[2] := 0;
+   i := 0;
+   j := 0;
+   while i < Length(ns) do begin
+      k := ns[i];
+      while (i + 1 < Length(ns)) and (ns[i + 1] = ns[i]) do begin
+         k += ns[i];
+         Inc(i);
+      end;
+
+      while (j < Length(ms)) and (ms[j] < ns[i]) do Inc(j);
+      while (j < Length(ms)) and (ms[j] = ns[i]) do begin
+         result[2] += k;
+         Inc(j);
+      end;
+
+      Inc(i)
+   end;
+end;
+
 initialization
 
    RegisterDay(01, @Run, 1);
    RegisterDay(01, @Run2, 2);
+   RegisterDay(01, @Run3, 3);
 
 end.

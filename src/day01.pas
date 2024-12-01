@@ -175,15 +175,13 @@ begin
 end;
 
 // Version 1 but taking input as TStream using EasyCSV.
-function Run4(input: TStream): TResult;
+function Run4(csv: TCSVReader): TResult;
 var
-   csv: TCSVReader = nil;
    row: TCSVReader.TRow;
    ns, ms: TIntList;
    i, j, k: Integer;
 begin
    try
-      csv := TCSVReader.Create(input);
       csv.Delimiter := ' ';
       ns := TIntList.Create; ns.Capacity := 1000;
       ms := TIntList.Create; ms.Capacity := 1000;
@@ -217,7 +215,6 @@ begin
    finally
       ns.Free;
       ms.Free;
-      csv.Free;
    end
 end;
 

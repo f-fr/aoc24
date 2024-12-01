@@ -53,6 +53,11 @@
         <Filename Value="src/days.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="src/day01.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Day01"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

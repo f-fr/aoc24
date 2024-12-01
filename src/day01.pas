@@ -217,6 +217,7 @@ begin
    finally
       ns.Free;
       ms.Free;
+      csv.Free;
    end
 end;
 

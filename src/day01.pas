@@ -185,8 +185,8 @@ begin
    try
       csv := TCSVReader.Create(input);
       csv.Delimiter := ' ';
-      ns := TIntList.Create;
-      ms := TIntList.Create;
+      ns := TIntList.Create; ns.Capacity := 1000;
+      ms := TIntList.Create; ms.Capacity := 1000;
       for row in csv.Rows do begin
          ns.Add(row.Integers[0]);
          ms.Add(row.Integers[1]);

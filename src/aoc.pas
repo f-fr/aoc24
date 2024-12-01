@@ -36,6 +36,8 @@ type
 
    TIntList = specialize TList<Integer>;
 
+   TIntArrayHelper = specialize TArrayHelper<Integer>;
+
    TNamesBag = class
    private
       type

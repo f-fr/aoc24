@@ -13,9 +13,8 @@ if [ "$day" != "00" ]; then
     sed -i -e "s/DAY/$day/" $src
     hg add $src
 
-    # create empty testcases
-    [ -f input/$day/test_part1.txt ] || echo "EXPECTED: 42" > input/$day/test_part1.txt
-    [ -f input/$day/test_part2.txt ] || echo "EXPECTED: 42" > input/$day/test_part2.txt
+    # create empty testcase
+    [ -f input/$day/test_part.txt ] || echo "EXPECTED: 4 2" > input/$day/test.txt
 
     # download input
     mkdir -p "input/$day"

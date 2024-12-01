@@ -34,6 +34,8 @@ type
    { 0 means "all days" }
    TDayOrZero = 0..25;
 
+   TIntList = specialize TList<Integer>;
+
    TNamesBag = class
    private
       type

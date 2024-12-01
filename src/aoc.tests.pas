@@ -65,15 +65,17 @@ end;
 procedure TDayTestCase.RunPartTest(part: TPart);
 var
    info: TSearchRec;
-   dir: String;
+   dir, filename: String;
    input: TStringList = nil;
    mem: TMemoryStream = nil;
 
+   i: Integer;
+   Expecteds: array of String;
    Expected: Int64;
    res: TResult;
 begin
    dir := Format('input/%.2d', [Fday]);
-   if FindFirst(ConcatPaths([dir, Format('test_part%d*.txt', [part])]), 0, info) <> 0 then exit;
+   if FindFirst(ConcatPaths([dir, 'test*.txt']), 0, info) <> 0 then exit;
 
    try
       input := TStringList.Create;
@@ -81,8 +83,21 @@ begin
       repeat
          input.LoadFromFile(ConcatPaths([dir, info.Name]));
          if input.Count <= 1 then continue; // ignore empty files
-         AssertTrue('First test line must be ''EXPECTED: <number>''', StartsText('EXPECTED:', input[0]));
-         Expected := StrToInt64(MidStr(input[0], 10, Length(input[0])));
+         i := input[0].IndexOf(':');
+         AssertTrue('First test line must be ''EXPECTED: <number>''', (i >= 0) and ('EXPECTED' = input[0].SubString(0, i).Trim));
+
+         FileName := info.Name;
+         if FileName.StartsWith('test_part') then begin
+            // single part test
+            if Ord(FileName[10]) - Ord('0') <> part then continue; // skip tests for other part
+            Expected := StrToInt64(input[0].SubString(i+1));
+         end else begin
+            // both parts test
+            Expecteds := input[0].SubString(i+1).Split(' ', TStringSplitOptions.ExcludeEmpty);
+            AssertEquals('Exactly two numbers expected in expectation line (EXPECTED: <number1> <number2>)', 2, Length(Expecteds));
+            Expected := StrToInt64(Expecteds[part - 1]);
+         end;
+
          input.Delete(0);
          mem.Clear;
          input.SaveToStream(mem);

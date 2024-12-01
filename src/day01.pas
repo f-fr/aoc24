@@ -37,8 +37,8 @@ var
    i, j, k: Integer;
 begin
    try
-      ns := TIntList.Create;
-      ms := TIntList.Create;
+      ns := TIntList.Create; ns.Capacity := 1000;
+      ms := TIntList.Create; ms.Capacity := 1000;
       for line in input do begin
          toks := line.Split(' ', TStringSplitOptions.ExcludeEmpty);
          ns.Add(toks[0].ToInteger);
@@ -103,8 +103,8 @@ var
    pair: TIntDict.TDictionaryPair;
 begin
    try
-      ns := TIntList.Create;
-      ms := TIntList.Create;
+      ns := TIntList.Create; ns.Capacity := 1000;
+      ms := TIntList.Create; ms.Capacity := 1000;
       for line in input do begin
          toks := line.Split(' ', TStringSplitOptions.ExcludeEmpty);
          ns.Add(toks[0].ToInteger);

@@ -181,10 +181,36 @@ begin
    end;
 end;
 
+function Run4(input: TCSVReader): TResult;
+var
+   row: TCSVReader.TRow;
+   a: TIntArray;
+   i, k: Integer;
+begin
+   input.Delimiter := ' ';
+
+   result[1] := 0;
+   result[2] := 0;
+   for row in input do begin
+      for k := -1 to row.Count - 1 do begin
+         a := row.toIntegerArray;
+         if k >= Low(a) then Delete(a, k, 1);
+         for i := 1 to High(a) do a[i-1] := a[i] - a[i-1];
+         Delete(a, High(a), 1);
+         if ((1 <= MinValue(a)) and (MaxValue(a) <= 3)) or ((-3 <= MinValue(a)) and (MaxValue(a) <= -1)) then begin
+            if k = -1 then Inc(result[1]);
+            Inc(result[2]);
+            break;
+         end;
+      end;
+   end;
+end;
+
 initialization
 
    RegisterDay(02, @Run, 1);
    RegisterDay(02, @Run2, 2);
    RegisterDay(02, @Run3, 3);
+   RegisterDay(02, @Run4, 4);
 
 end.

@@ -23,7 +23,7 @@ fi
 
 # Auto generate files for all known days
 
-DAYS=$(find src -maxdepth 1 -name "day??.pas" | sed -e 's!src/day\(.*\)\.pas!\1!')
+DAYS=$(find src -maxdepth 1 -name "day??.pas" | sed -e 's!src/day\(.*\)\.pas!\1!' | sort)
 
 if  [ ! -z "$DAYS" ]; then
     printf ", Day%02d\n" $DAYS > src/days.inc

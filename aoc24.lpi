@@ -79,13 +79,18 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
+        <Filename Value="src/easycsv.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/day02.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Day02"/>
+      </Unit>
+      <Unit>
         <Filename Value="src/day01.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Day01"/>
-      </Unit>
-      <Unit>
-        <Filename Value="src/easycsv.pas"/>
-        <IsPartOfProject Value="True"/>
       </Unit>
     </Units>
   </ProjectOptions>

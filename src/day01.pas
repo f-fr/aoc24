@@ -24,7 +24,7 @@ interface
 
 implementation
 
-uses AOC, Classes, SysUtils, StreamEx, generics.collections;
+uses AOC, Classes, SysUtils, StreamEx, generics.collections, EasyCSV;
 
 type
    TIntDict = specialize TDictionary<Integer, Integer>;
@@ -174,10 +174,55 @@ begin
    end;
 end;
 
+// Version 1 but taking input as TStream using EasyCSV.
+function Run4(csv: TCSVReader): TResult;
+var
+   row: TCSVReader.TRow;
+   ns, ms: TIntList;
+   i, j, k: Integer;
+begin
+   try
+      csv.Delimiter := ' ';
+      ns := TIntList.Create; ns.Capacity := 1000;
+      ms := TIntList.Create; ms.Capacity := 1000;
+      for row in csv.Rows do begin
+         ns.Add(row.Integers[0]);
+         ms.Add(row.Integers[1]);
+      end;
+      ns.Sort;
+      ms.Sort;
+      result[1] := 0;
+      for i := 0 to ns.Count - 1 do result[1] += Abs(ns[i] - ms[i]);
+
+      result[2] := 0;
+      i := 0;
+      j := 0;
+      while i < ns.Count do begin
+         k := ns[i];
+         while (i + 1 < ns.Count) and (ns[i + 1] = ns[i]) do begin
+            k += ns[i];
+            Inc(i);
+         end;
+
+         while (j < ms.Count) and (ms[j] < ns[i]) do Inc(j);
+         while (j < ms.Count) and (ms[j] = ns[i]) do begin
+            result[2] += k;
+            Inc(j);
+         end;
+
+         Inc(i)
+      end;
+   finally
+      ns.Free;
+      ms.Free;
+   end
+end;
+
 initialization
 
    RegisterDay(01, @Run, 1);
    RegisterDay(01, @Run2, 2);
    RegisterDay(01, @Run3, 3);
+   RegisterDay(01, @Run4, 4);
 
 end.

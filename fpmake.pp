@@ -18,6 +18,7 @@ begin
       p.targets.AddProgram('aoc24.pas');
       p.targets.AddUnit('aoc.pas');
       p.targets.AddUnit('aoc.generic.pas');
+      p.targets.AddUnit('easycsv.pas');
       p.targets.AddUnit('day01.pas');
       run;
    end

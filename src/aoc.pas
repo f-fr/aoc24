@@ -23,7 +23,7 @@ unit AOC;
 
 interface
 
-uses AOC.Generic, generics.collections, Classes, StreamEx;
+uses AOC.Generic, generics.collections, Classes, StreamEx, EasyCSV;
 
 type
 
@@ -70,6 +70,7 @@ type
    TStringsRunFunction = function (input: TStrings): TResult;
    TTextReaderRunFunction = function (input: TTextReader): TResult;
    TGridRunFunction = function (input: TGrid): TResult;
+   TCSVRunFunction = function (input: TCSVReader): TResult;
 
    TRunner = class
       function Run(stream: TStream): TResult; virtual; abstract;
@@ -111,6 +112,15 @@ type
       function Run(input: TStream): TResult; override;
    end;
 
+   TCSVRunner = class(TRunner)
+   private
+      Frun: TCSVRunFunction;
+
+   public
+      constructor Create(ARun: TCSVRunFunction);
+      function Run(input: TStream): TResult; override;
+   end;
+
    TTextReaderEnumerator = record
    private
       Freader: TTextReader;
@@ -127,6 +137,7 @@ type
    procedure RegisterDay(day: TDay; run: TTextReaderRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer = 1);
+   procedure RegisterDay(day: TDay; run: TCSVRunFunction; Version: Integer = 1);
    procedure RunDay(day: TDayOrZero; version: Integer; const inputFileName: String);
 
 implementation
@@ -246,6 +257,26 @@ begin
    end;
 end;
 
+{ TCSVRunner }
+
+constructor TCSVRunner.Create(ARun: TCSVRunFunction);
+begin
+   Frun := Arun;
+end;
+
+function TCSVRunner.Run(input: TStream): TResult;
+var
+   csv: TCSVReader = nil;
+begin
+   try
+      csv := TCSVReader.Create(input);
+      csv.OwnsStream := False;
+      result := Frun(csv);
+   finally
+      csv.Free;
+   end;
+end;
+
 { TTextReaderEnumerator }
 
 function TTextReaderEnumerator.MoveNext: Boolean;
@@ -288,6 +319,11 @@ end;
 procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer);
 begin
    RegisterDay(day, TGridRunner.Create(run), Version);
+end;
+
+procedure RegisterDay(day: TDay; run: TCSVRunFunction; Version: Integer);
+begin
+   RegisterDay(day, TCSVRunner.Create(run), Version);
 end;
 
 procedure RunDay(day: TDayOrZero; Version: Integer; const inputFileName: String);

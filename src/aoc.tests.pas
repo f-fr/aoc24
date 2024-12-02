@@ -27,34 +27,41 @@ uses Aoc;
 type
    TPart = 1..2;
 
-procedure AddTest(ADay: TDay; ARunner: TRunner);
+procedure AddTest(ADay: TDay; AVersion: Integer; ARunner: TRunner);
 
 implementation
 
 uses fpcUnit, TestRegistry, SysUtils, StrUtils, Classes;
 
 type
+
+   { TDayTestCase }
+
    TDayTestCase = class(TTestCase)
    private
       Fday: TDay;
+      Fversion: Integer;
       Frunner: TRunner;
+      Fpart: TPart;
 
    public
-      constructor Create(ADay: TDay; ARunner: TRunner; APart: TPart); reintroduce;
+      constructor Create(ADay: TDay; AVersion: Integer; ARunner: TRunner; APart: TPart); reintroduce;
       destructor Destroy; override;
 
       procedure RunPartTest(part: TPart);
-
-   published
-      procedure TestPart1;
-      procedure TestPart2;
+      procedure RunTest; override;
    end;
 
-constructor TDayTestCase.Create(ADay: TDay; ARunner: TRunner; APart: TPart);
+constructor TDayTestCase.Create(ADay: TDay; AVersion: Integer; ARunner: TRunner; APart: TPart);
 begin
-   inherited CreateWithName(Format('TestPart%d', [APart]));
+   if AVersion = 1 then
+      inherited CreateWithName(Format('Test Part %d', [APart]))
+   else
+     inherited CreateWithName(Format('Test Part %d Version %d', [APart, AVersion]));
    Frunner := ARunner;
    Fday := ADay;
+   Fversion := AVersion;
+   Fpart := APart;
 end;
 
 destructor TDayTestCase.Destroy;
@@ -113,23 +120,18 @@ begin
    end;
 end;
 
-procedure TDayTestCase.TestPart1;
+procedure TDayTestCase.RunTest;
 begin
-   RunPartTest(1);
+   RunPartTest(Fpart);
 end;
 
-procedure TDayTestCase.TestPart2;
-begin
-   RunPartTest(2);
-end;
-
-procedure AddTest(ADay: TDay; ARunner: TRunner);
+procedure AddTest(ADay: TDay; AVersion: Integer; ARunner: TRunner);
 var
    suite: String;
 begin
    suite := Format('Day%.2d', [ADay]);
-   RegisterTest(suite, TDayTestCase.Create(ADay, ARunner, 1));
-   RegisterTest(suite, TDayTestCase.Create(ADay, ARunner, 2));
+   RegisterTest(suite, TDayTestCase.Create(ADay, AVersion, ARunner, 1));
+   RegisterTest(suite, TDayTestCase.Create(ADay, AVersion, ARunner, 2));
 end;
 
 end.

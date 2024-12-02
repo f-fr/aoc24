@@ -300,7 +300,7 @@ begin
    assert(Version > 0);
    SetLength(days[day], Max(Version, Length(days[day])));
    days[day][Version-1] := runner;
-   AddTest(day, runner);
+   AddTest(day, Version, runner);
 end;
 
 procedure RegisterDay(day: TDay; run: TStreamRunFunction; Version: Integer);

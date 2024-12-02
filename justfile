@@ -6,12 +6,12 @@ build:
 release:
     mkdir -p bin/x86_64-linux-release
     mkdir -p units/x86_64-linux-release
-    fpc -dRELEASE -O3 -XX -CX -Xs -FEbin/x86_64-linux-release -FUunits/x86_64-linux-release -Fusrc src/aoc24
+    fpc -dRELEASE -duselibc -O3 -XX -CX -Xs -FEbin/x86_64-linux-release -FUunits/x86_64-linux-release -Fusrc src/aoc24
 
 llvm:
     mkdir -p bin/x86_64-linux-llvm
     mkdir -p units/x86_64-linux-llvm
-    fpc-llvm -dRELEASE -O3 -XX -CX -Xs -FEbin/x86_64-linux-llvm -FUunits/x86_64-linux-llvm -Fusrc src/aoc24
+    fpc-llvm -dRELEASE -duselibc -O3 -XX -CX -Xs -FEbin/x86_64-linux-llvm -FUunits/x86_64-linux-llvm -Fusrc src/aoc24
 
 run: release
     bin/x86_64-linux-release/aoc24

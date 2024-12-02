@@ -40,6 +40,12 @@
             </Debugging>
             <LinkSmart Value="True"/>
           </Linking>
+          <Other>
+            <CustomOptions Value="-duselibc"/>
+            <OtherDefines Count="1">
+              <Define0 Value="uselibc"/>
+            </OtherDefines>
+          </Other>
         </CompilerOptions>
       </Item>
     </BuildModes>
@@ -76,6 +82,10 @@
         <Filename Value="src/day01.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Day01"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/easycsv.pas"/>
+        <IsPartOfProject Value="True"/>
       </Unit>
     </Units>
   </ProjectOptions>

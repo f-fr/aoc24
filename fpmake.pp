@@ -13,12 +13,12 @@ begin
       p.dependencies.add('rtl-generics');
       p.dependencies.add('fcl-base');
       p.dependencies.add('fcl-fpcunit');
-      p.dependencies.add('easycsv');
       p.options.add('-Sc');
       p.SourcePath.Add('src');
       p.targets.AddProgram('aoc24.pas');
       p.targets.AddUnit('aoc.pas');
       p.targets.AddUnit('aoc.generic.pas');
+      p.targets.AddUnit('easycsv.pas');
       p.targets.AddUnit('day01.pas');
       run;
    end

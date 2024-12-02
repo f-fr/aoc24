@@ -58,6 +58,10 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Day01"/>
       </Unit>
+      <Unit>
+        <Filename Value="src/easycsv.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -126,9 +126,65 @@ begin
    end;
 end;
 
+// The same idea as version 2 but we use "outgoing" edges instead of "incoming".
+function Run3(input: TCSVReader): TResult;
+var
+   row: TCSVReader.TRow;
+   i: Integer;
+   dir, d, dskip: Integer;
+   a, a1, a2: Integer;
+begin
+   input.Delimiter := ' ';
+
+   result[1] := 0;
+   result[2] := 0;
+   for row in input do begin
+      // trivial cases
+      if row.Count <= 1 then begin
+         Inc(result[1]);
+         Inc(result[2]);
+      end else if row.Count = 2 then begin
+         d := Abs(row.Integers[1] - row.Integers[0]);
+         if (1 <= d) and (d <= 3) then Inc(result[1]);
+         Inc(result[2]);
+      end else begin
+         // try both directions (at least one should stop after at most 2 steps or so)
+         for dir in TIntArray.Create(-1, 1) do begin
+            d := dir;
+            dskip := dir;
+            a1 := row.Integers[0];
+            a2 := row.Integers[1];
+            for i := 2 to row.Count do begin
+               // the three consecutive numbers
+               a := a1;
+               a1 := a2;
+               if i < row.Count then a2 := row.Integers[i] else a2 += dir;
+
+               if (dskip <> 0) and (i < row.Count) then begin
+                  dskip := a2 - a1;
+                  if (Sign(dskip) <> dir) or (Abs(dskip) > 3) then dskip := 0;
+               end;
+               if d <> 0 then begin
+                  if dskip = 0 then begin
+                     if i < row.Count then dskip := a2 - a else dskip := dir;
+                     if (Sign(dskip) <> dir) or (Abs(dskip) > 3) then dskip := 0;
+                  end;
+                  d := a1 - a;
+                  if (Sign(d) <> dir) or (Abs(d) > 3) then d := 0;
+               end;
+               if (d = 0) and (dskip = 0) then break;
+            end;
+            if d <> 0 then Inc(result[1]);
+            if dskip <> 0 then Inc(result[2]);
+         end;
+      end;
+   end;
+end;
+
 initialization
 
    RegisterDay(02, @Run, 1);
    RegisterDay(02, @Run2, 2);
+   RegisterDay(02, @Run3, 3);
 
 end.

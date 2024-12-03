@@ -24,7 +24,7 @@ interface
 
 implementation
 
-uses AOC, Classes, SysUtils, regexpr;
+uses AOC, Classes, SysUtils, StrUtils, regexpr;
 
 var
    re_mul: TRegExpr;
@@ -58,10 +58,54 @@ begin
    end
 end;
 
+function Run2(input: TStream): TResult;
+var
+   s: TStringStream = nil;
+   data: String;
+   i, j, x: Integer;
+   doit: Boolean = True;
+begin
+   result[1] := 0;
+   result[2] := 0;
+
+   try
+      s := TStringStream.Create;
+      s.LoadFromStream(input);
+      data := s.DataString;
+      i := 1;
+      while true do begin
+         j := PosSetEx(['m', 'd'], data, i);
+         if j = 0 then break;
+         if strlcomp(@data[j], 'mul(', 4) = 0 then begin
+            i := j + 4;
+            j := i;
+            while (j < Length(data)) and (data[j] in DigitChars) do Inc(j);
+            if (i = j) or (data[j] <> ',') then begin i := j; continue; end;
+            x := StrToInt(data.SubString(i - 1, j - i));
+            i := j + 1;
+            j := i;
+            while (j < Length(data)) and (data[j] in DigitChars) do Inc(j);
+            if (i = j) or (data[j] <> ')') then begin i := j; continue; end;
+            x *= StrToInt(data.SubString(i - 1, j - i));
+            result[1] += x;
+            if doit then result[2] += x;
+         end else if strlcomp(@data[j], 'do()', 4) = 0 then
+            doit := True
+         else if strlcomp(@data[j], 'don''t()', 7) = 0 then
+            doit := False;
+
+         i := j + 1;
+      end
+   finally
+      s.Free;
+   end
+end;
+
 initialization
    re_mul := TRegExpr.Create('mul\((\d{1,3}),(\d{1,3})\)|(do\(\))|(don''t\(\))');
 
    RegisterDay(03, @Run, 1);
+   RegisterDay(03, @Run2, 2);
 
 finalization
    re_mul.Free;

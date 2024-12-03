@@ -80,12 +80,18 @@ begin
             i := j + 4;
             j := i;
             while (j < Length(data)) and (data[j] in DigitChars) do Inc(j);
-            if (i = j) or (data[j] <> ',') then begin i := j; continue; end;
+            if (i = j) or (j = Length(data)) or (data[j] <> ',') then begin
+               i := j;
+               continue;
+            end;
             x := StrToInt(data.SubString(i - 1, j - i));
             i := j + 1;
             j := i;
             while (j < Length(data)) and (data[j] in DigitChars) do Inc(j);
-            if (i = j) or (data[j] <> ')') then begin i := j; continue; end;
+            if (i = j) or (j = Length(data)) or (data[j] <> ')') then begin
+               i := j;
+               continue;
+            end;
             x *= StrToInt(data.SubString(i - 1, j - i));
             result[1] += x;
             if doit then result[2] += x;

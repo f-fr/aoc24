@@ -56,6 +56,24 @@
     <RunParams>
       <FormatVersion Value="2"/>
     </RunParams>
+    <RequiredPackages>
+      <Item>
+        <PackageName Value="rtl-console"/>
+        <DependencyType Value="FPMake"/>
+      </Item>
+      <Item>
+        <PackageName Value="rtl-generics"/>
+        <DependencyType Value="FPMake"/>
+      </Item>
+      <Item>
+        <PackageName Value="fcl-base"/>
+        <DependencyType Value="FPMake"/>
+      </Item>
+      <Item>
+        <PackageName Value="regexpr"/>
+        <DependencyType Value="FPMake"/>
+      </Item>
+    </RequiredPackages>
     <Units>
       <Unit>
         <Filename Value="src/aoc24.pas"/>
@@ -91,6 +109,11 @@
         <Filename Value="src/day02.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Day02"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/day03.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Day03"/>
       </Unit>
     </Units>
   </ProjectOptions>

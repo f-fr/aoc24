@@ -13,6 +13,7 @@ begin
       p.dependencies.add('rtl-generics');
       p.dependencies.add('fcl-base');
       p.dependencies.add('fcl-fpcunit');
+      p.dependencies.add('regexpr');
       p.options.add('-Sc');
       p.SourcePath.Add('src');
       p.targets.AddProgram('aoc24.pas');

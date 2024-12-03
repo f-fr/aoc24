@@ -20,6 +20,10 @@
     </RunParams>
     <RequiredPackages>
       <Item>
+        <PackageName Value="regexpr"/>
+        <DependencyType Value="FPMake"/>
+      </Item>
+      <Item>
         <PackageName Value="fpcunittestrunner"/>
       </Item>
       <Item>
@@ -68,6 +72,11 @@
         <Filename Value="src/day02.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Day02"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/day03.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Day03"/>
       </Unit>
     </Units>
   </ProjectOptions>

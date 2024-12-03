@@ -31,36 +31,31 @@ var
 
 function Run(input: TStream): TResult;
 var
-   s: TStringStream = nil;
+   data: String;
    x: Integer;
    doit: Boolean = True;
 begin
    result[1] := 0;
    result[2] := 0;
 
-   try
-      s := TStringStream.Create;
-      s.LoadFromStream(input);
-      if re_mul.Exec(s.DataString) then
-         repeat
-            if re_mul.MatchLen[3] > 0 then
-               doit := True
-            else if re_mul.MatchLen[4] > 0 then
-               doit := False
-            else begin
-               x := StrToInt(re_mul.Match[1]) * StrToInt(re_mul.Match[2]);
-               result[1] += x;
-               if doit then result[2] += x;
-            end
-         until not re_mul.ExecNext;
-   finally
-      s.Free;
-   end
+   SetLength(data, input.Size);
+   input.ReadBuffer(data[1], input.Size);
+   if re_mul.Exec(data) then
+      repeat
+         if re_mul.MatchLen[3] > 0 then
+            doit := True
+         else if re_mul.MatchLen[4] > 0 then
+            doit := False
+         else begin
+            x := StrToInt(re_mul.Match[1]) * StrToInt(re_mul.Match[2]);
+            result[1] += x;
+            if doit then result[2] += x;
+         end
+      until not re_mul.ExecNext;
 end;
 
 function Run2(input: TStream): TResult;
 var
-   s: TStringStream = nil;
    data: String;
    i, j, x: Integer;
    doit: Boolean = True;
@@ -68,42 +63,37 @@ begin
    result[1] := 0;
    result[2] := 0;
 
-   try
-      s := TStringStream.Create;
-      s.LoadFromStream(input);
-      data := s.DataString;
-      i := 1;
-      while true do begin
-         j := PosSetEx(['m', 'd'], data, i);
-         if j = 0 then break;
-         if strlcomp(@data[j], 'mul(', 4) = 0 then begin
-            i := j + 4;
-            j := i;
-            while (j < Length(data)) and (data[j] in DigitChars) do Inc(j);
-            if (i = j) or (j = Length(data)) or (data[j] <> ',') then begin
-               i := j;
-               continue;
-            end;
-            x := StrToInt(data.SubString(i - 1, j - i));
-            i := j + 1;
-            j := i;
-            while (j < Length(data)) and (data[j] in DigitChars) do Inc(j);
-            if (i = j) or (j = Length(data)) or (data[j] <> ')') then begin
-               i := j;
-               continue;
-            end;
-            x *= StrToInt(data.SubString(i - 1, j - i));
-            result[1] += x;
-            if doit then result[2] += x;
-         end else if strlcomp(@data[j], 'do()', 4) = 0 then
-            doit := True
-         else if strlcomp(@data[j], 'don''t()', 7) = 0 then
-            doit := False;
-
+   SetLength(data, input.Size);
+   input.ReadBuffer(data[1], input.Size);
+   i := 1;
+   while true do begin
+      j := PosSetEx(['m', 'd'], data, i);
+      if j = 0 then break;
+      if strlcomp(@data[j], 'mul(', 4) = 0 then begin
+         i := j + 4;
+         j := i;
+         while (j < Length(data)) and (data[j] in DigitChars) do Inc(j);
+         if (i = j) or (j = Length(data)) or (data[j] <> ',') then begin
+            i := j;
+            continue;
+         end;
+         x := StrToInt(data.SubString(i - 1, j - i));
          i := j + 1;
-      end
-   finally
-      s.Free;
+         j := i;
+         while (j < Length(data)) and (data[j] in DigitChars) do Inc(j);
+         if (i = j) or (j = Length(data)) or (data[j] <> ')') then begin
+            i := j;
+            continue;
+         end;
+         x *= StrToInt(data.SubString(i - 1, j - i));
+         result[1] += x;
+         if doit then result[2] += x;
+      end else if strlcomp(@data[j], 'do()', 4) = 0 then
+         doit := True
+      else if strlcomp(@data[j], 'don''t()', 7) = 0 then
+         doit := False;
+
+      i := j + 1;
    end
 end;
 

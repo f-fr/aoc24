@@ -36,8 +36,8 @@ begin
 
    grid.Boundary := '.';
 
-   for i := 1 to grid.N-1 do begin
-      for j := 1 to grid.M-1 do begin
+   for i := 1 to grid.N-2 do begin
+      for j := 1 to grid.M-2 do begin
          for dx := -1 to 1 do begin
             for dy := -1 to 1 do begin
                if (grid[i,j] = 'X') and

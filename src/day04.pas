@@ -66,7 +66,7 @@ begin
    result[1] := 0;
    result[2] := 0;
 
-   for i := 0 to grid.Count - 1 do grid[i] := Format('.%s.', [grid[i]]);
+   for i := 0 to grid.Count - 1 do grid[i] := '.' + grid[i] + '.';
    grid.Append(StringOfChar('.', grid[0].Length));
    grid.Insert(0, grid[grid.Count - 1]);
 

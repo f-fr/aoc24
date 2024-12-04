@@ -28,7 +28,8 @@ uses AOC, Classes;
 
 function Run(input: TStream): TResult;
 begin
-
+   result[1] := 0;
+   result[2] := 0;
 end;
 
 initialization

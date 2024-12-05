@@ -94,8 +94,64 @@ begin
    end
 end;
 
+function Run2(input: TTextReader): TResult;
+type
+   TEdge = array[1..2] of Integer;
+   TEdges = array[1..99, 1..99] of Boolean;
+
+var
+   edges: TEdges;
+
+   function CmpByEdges(constref u, v: Integer): Integer;
+   begin
+      if u = v then exit(0);
+      if edges[v, u] then result := 1
+      else result := -1;
+   end;
+
+var
+   line: String;
+   toks: array of String;
+   nodes: TIntArray;
+   i: Integer;
+   valid: Boolean;
+
+begin
+   result[1] := 0;
+   result[2] := 0;
+
+   edges := default(TEdges);
+   for line in input do begin
+      if Length(line) = 0 then break;
+      toks := line.Split('|');
+      edges[toks[0].toInteger, toks[1].toInteger] := True;
+   end;
+
+   for line in input do begin
+      if Length(line) = 0 then continue;
+      toks := line.Split(',');
+      SetLength(nodes, Max(Length(nodes), Length(toks)));
+      for i := 0 to High(toks) do nodes[i] := toks[i].toInteger;
+
+      valid := True;
+      for i := 1 to High(toks) do begin
+         if not edges[nodes[i-1], nodes[i]] then begin
+            valid := False;
+            break;
+         end;
+      end;
+      if valid then
+         result[1] += nodes[Length(toks) div 2]
+      else begin
+         specialize Sort<Integer>(nodes, @CmpByEdges, 0, Length(toks));
+         result[2] += nodes[Length(toks) div 2];
+      end;
+   end;
+end;
+
 initialization
 
    RegisterDay(05, @Run, 1);
+   RegisterDay(05, @Run2, 2);
 
 end.

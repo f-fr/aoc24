@@ -16,6 +16,7 @@
 }
 
 {$mode objfpc}
+{$modeswitch nestedprocvars}
 {$H+}
 
 unit Day05;
@@ -24,52 +25,40 @@ interface
 
 implementation
 
-uses AOC, Classes, StreamEx, generics.collections, generics.defaults, SysUtils, Math;
+uses AOC, Classes, StreamEx, Sorting, generics.collections, generics.defaults, SysUtils, Math;
 
+function Run(input: TTextReader): TResult;
 type
    TEdge = array[1..2] of Integer;
    TEdges = specialize TDictionary<TEdge, Boolean>;
 
-   TCmpByEdges = class(TInterfacedObject, specialize IComparer<Integer>)
-      Fedges: TEdges;
-      constructor Create(Aedges: TEdges);
-      function Compare(constref ALeft, ARight: Integer): Integer;
-   end;
-
-constructor TCmpByEdges.Create(Aedges: TEdges);
-begin
-    inherited Create;
-    Fedges := Aedges;
-end;
-
-function TCmpByEdges.Compare(constref ALeft, ARight: Integer): Integer;
 var
-   e: TEdge;
-begin
-   if ALeft = ARight then exit(0);
-   e[1] := ARight;
-   e[2] := ALeft;
-   if Fedges.ContainsKey(e) then exit(+1);
-   result := -1;
-end;
+   edges: TEdges = nil;
 
-function Run(input: TTextReader): TResult;
+   function CmpByEdges(constref u, v: Integer): Integer;
+   var
+      e: TEdge;
+   begin
+      if u = v then exit(0);
+      e[1] := v;
+      e[2] := u;
+      if edges.ContainsKey(e) then result := 1
+      else result := -1;
+   end;
 
 var
    line: String;
    toks: array of String;
    nodes: TIntArray;
-   edges: TEdges = nil;
    e: TEdge;
-   CmpByEdges: TCmpByEdges = nil;
    i: Integer;
    valid: Boolean;
+
 begin
    result[1] := 0;
    result[2] := 0;
    try
       edges := TEdges.Create;
-      CmpByEdges := TCmpByEdges.Create(edges);
       for line in input do begin
          if Length(line) = 0 then break;
          toks := line.Split('|');
@@ -96,13 +85,12 @@ begin
          if valid then
             result[1] += nodes[Length(toks) div 2]
          else begin
-            TIntArrayHelper.Sort(nodes, CmpByEdges, 0, Length(toks));
+            specialize Sort<Integer>(nodes, @CmpByEdges, 0, Length(toks));
             result[2] += nodes[Length(toks) div 2];
          end;
       end;
    finally
       edges.Free;
-      CmpByEdges.Free;
    end
 end;
 

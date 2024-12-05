@@ -25,9 +25,9 @@ interface
 
 implementation
 
-uses AOC, Classes, StreamEx, Sorting, generics.collections, generics.defaults, SysUtils, Math;
+uses AOC, Classes, EasyCSV, Sorting, generics.collections, generics.defaults, SysUtils, Math;
 
-function Run(input: TTextReader): TResult;
+function Run(input: TCSVReader): TResult;
 type
    TEdge = array[1..2] of Integer;
    TEdges = specialize TDictionary<TEdge, Boolean>;
@@ -47,8 +47,7 @@ var
    end;
 
 var
-   line: String;
-   toks: array of String;
+   row: TCSVReader.TRow;
    nodes: TIntArray;
    e: TEdge;
    i: Integer;
@@ -59,22 +58,21 @@ begin
    result[2] := 0;
    try
       edges := TEdges.Create;
-      for line in input do begin
-         if Length(line) = 0 then break;
-         toks := line.Split('|');
-         e[1] := toks[0].toInteger;
-         e[2] := toks[1].toInteger;
+      input.Delimiter := '|';
+      for row in input do begin
+         if row.Count < 2 then break;
+         e[1] := row.Integers[0];
+         e[2] := row.Integers[1];
          edges.Add(e, True);
       end;
-      for line in input do begin
-         if Length(line) = 0 then continue;
-         toks := line.Split(',');
-         SetLength(nodes, Max(Length(nodes), Length(toks)));
-         for i := 0 to High(toks) do nodes[i] := toks[i].toInteger;
+      input.Delimiter := ',';
+      for row in input do begin
+         SetLength(nodes, Max(Length(nodes), row.Count));
+         for i := 0 to row.Count - 1 do nodes[i] := row.Integers[i];
 
          valid := True;
          e[2] := nodes[0];
-         for i := 1 to High(toks) do begin
+         for i := 1 to row.Count - 1 do begin
             e[1] := e[2];
             e[2] := nodes[i];
             if not edges.ContainsKey(e) then begin
@@ -83,10 +81,10 @@ begin
             end;
          end;
          if valid then
-            result[1] += nodes[Length(toks) div 2]
+            result[1] += nodes[row.Count div 2]
          else begin
-            specialize Sort<Integer>(nodes, @CmpByEdges, 0, Length(toks));
-            result[2] += nodes[Length(toks) div 2];
+            specialize Sort<Integer>(nodes, @CmpByEdges, 0, row.Count);
+            result[2] += nodes[row.Count div 2];
          end;
       end;
    finally
@@ -94,7 +92,7 @@ begin
    end
 end;
 
-function Run2(input: TTextReader): TResult;
+function Run2(input: TCSVReader): TResult;
 type
    TEdge = array[1..2] of Integer;
    TEdges = array[1..99, 1..99] of Boolean;
@@ -110,8 +108,7 @@ var
    end;
 
 var
-   line: String;
-   toks: array of String;
+   row: TCSVReader.TRow;
    nodes: TIntArray;
    i: Integer;
    valid: Boolean;
@@ -120,31 +117,32 @@ begin
    result[1] := 0;
    result[2] := 0;
 
+   input.Delimiter := '|';
+
    edges := default(TEdges);
-   for line in input do begin
-      if Length(line) = 0 then break;
-      toks := line.Split('|');
-      edges[toks[0].toInteger, toks[1].toInteger] := True;
+   for row in input do begin
+      if row.Count < 2 then break; // the empty line contains one cell
+      edges[row.Integers[0], row.Integers[1]] := True;
    end;
 
-   for line in input do begin
-      if Length(line) = 0 then continue;
-      toks := line.Split(',');
-      SetLength(nodes, Max(Length(nodes), Length(toks)));
-      for i := 0 to High(toks) do nodes[i] := toks[i].toInteger;
+   input.Delimiter := ',';
+
+   for row in input do begin
+      SetLength(nodes, Max(Length(nodes), row.Count));
+      for i := 0 to row.Count - 1 do nodes[i] := row.Integers[i];;
 
       valid := True;
-      for i := 1 to High(toks) do begin
+      for i := 1 to row.Count - 1 do begin
          if not edges[nodes[i-1], nodes[i]] then begin
             valid := False;
             break;
          end;
       end;
       if valid then
-         result[1] += nodes[Length(toks) div 2]
+         result[1] += nodes[row.Count div 2]
       else begin
-         specialize Sort<Integer>(nodes, @CmpByEdges, 0, Length(toks));
-         result[2] += nodes[Length(toks) div 2];
+         specialize Sort<Integer>(nodes, @CmpByEdges, 0, row.Count);
+         result[2] += nodes[row.Count div 2];
       end;
    end;
 end;

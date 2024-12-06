@@ -126,7 +126,7 @@ type
       property Current: TCol read GetCurrent;
    end;
 
-   generic TGenGrid<T> = class
+   generic TGenGrid<T> = class sealed
    public
       type
          TRow = specialize TRow<T>;
@@ -287,42 +287,6 @@ begin
       result[i] := Char(Fitems[(i - 1) * Fskip]);
 end;
 
-{ TRowEnum }
-
-function TRowEnum.GetCurrent: TRow;
-begin
-   result := specialize TGenGrid<T>(Fgrid).Row[Findex - 1];
-end;
-
-function TRowEnum.MoveNext: Boolean; inline;
-begin
-   result := Findex < specialize TGenGrid<T>(Fgrid).N;
-   if result then Inc(Findex);
-end;
-
-function TRowEnum.GetEnumerator: TRowEnum; inline;
-begin
-   result := self;
-end;
-
-{ TColEnum }
-
-function TColEnum.GetCurrent: TCol;
-begin
-   result := specialize TGenGrid<T>(Fgrid).Col[Findex - 1];
-end;
-
-function TColEnum.MoveNext: Boolean; inline;
-begin
-   result := Findex < specialize TGenGrid<T>(Fgrid).M;
-   if result then Inc(Findex);
-end;
-
-function TColEnum.GetEnumerator: TColEnum; inline;
-begin
-   result := self;
-end;
-
 { TGenGrid }
 
 constructor TGenGrid.Create(nrows: Cardinal; ncols: Cardinal);
@@ -443,12 +407,16 @@ end;
 
 function TGenGrid.GetItem(p: TPos): T;
 begin
-   result := GetItem(p.i, p.j);
+   assert(p.i < Fnrows);
+   assert(p.j < Fncols);
+   result := Fitems[Fstart + p.i * Fskip + p.j];
 end;
 
 procedure TGenGrid.SetItem(p: TPos; value: T);
 begin
-   SetItem(p.i, p.j, value);
+   assert(p.i < Fnrows);
+   assert(p.j < Fncols);
+   Fitems[Fstart + p.i * Fskip + p.j] := value;
 end;
 
 function TGenGrid.GetRow(i: Cardinal): TRow;
@@ -542,14 +510,51 @@ begin
    end;
 end;
 
+{ TRowEnum }
+
+function TRowEnum.GetCurrent: TRow;
+begin
+   result := specialize TGenGrid<T>(Fgrid).Row[Findex - 1];
+end;
+
+function TRowEnum.MoveNext: Boolean; inline;
+begin
+   result := Findex < specialize TGenGrid<T>(Fgrid).N;
+   if result then Inc(Findex);
+end;
+
+function TRowEnum.GetEnumerator: TRowEnum; inline;
+begin
+   result := self;
+end;
+
+{ TColEnum }
+
+function TColEnum.GetCurrent: TCol;
+begin
+   result := specialize TGenGrid<T>(Fgrid).Col[Findex - 1];
+end;
+
+function TColEnum.MoveNext: Boolean; inline;
+begin
+   result := Findex < specialize TGenGrid<T>(Fgrid).M;
+   if result then Inc(Findex);
+end;
+
+function TColEnum.GetEnumerator: TColEnum; inline;
+begin
+   result := self;
+end;
+
 generic function GCD<T>(a, b: T): T; 
 var
-   r0, r1, r2, q: T;
+   r0, r1, r2: T;
+   //q: T;
 begin
    r0 := a;
    r1 := b;
    while r1 <> 0 do begin
-      q := r0 div r1;
+      //q := r0 div r1;
       r2 := r0 mod r1;
       r0 := r1;
       r1 := r2;

@@ -25,6 +25,9 @@
     </RunParams>
     <RequiredPackages>
       <Item>
+        <PackageName Value="LCL"/>
+      </Item>
+      <Item>
         <PackageName Value="regexpr"/>
         <DependencyType Value="FPMake"/>
       </Item>
@@ -93,6 +96,11 @@
         <Filename Value="src/day05.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Day05"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src/day06.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Day06"/>
       </Unit>
     </Units>
   </ProjectOptions>

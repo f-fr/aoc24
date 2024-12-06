@@ -17,6 +17,7 @@
 
 {$mode objfpc}
 {$modeswitch advancedrecords}
+{$modeswitch typehelpers}
 {$H+}
 
 unit AOC;
@@ -58,7 +59,16 @@ type
       property Items[AName: String]: Cardinal read GetOrAddName; default;
    end;
 
+   TDir = Aoc.Generic.TDir;
+   TPos = Aoc.Generic.TPos;
    TGrid = specialize TGenGrid<char>;
+
+   TDirHelper = type helper for TDir
+      function Invert: TDir; inline;
+      function Clockwise: TDir; inline;
+      function CounterClockwise: TDir; inline;
+      class function FromChar(ch: Char): TDir; static; inline;
+   end;
 
    function GCD(a, b: Cardinal): Cardinal; inline;
    function GCDExt(a, b: Integer; out afactor, bfactor: Integer): Integer; inline;
@@ -166,6 +176,33 @@ begin
    if Fnames.TryGetValue(AName, result) then exit;
    result := Fnames.Count;
    Fnames.Add(AName, result);
+end;
+
+{ TDirHelper }
+function TDirHelper.Invert: TDir; inline;
+begin
+   result := TDir((Ord(self) + 2) mod 4);
+end;
+
+function TDirHelper.Clockwise: TDir; inline;
+begin
+   result := TDir((Ord(self) + 1) mod 4);
+end;
+
+function TDirHelper.CounterClockwise: TDir; inline;
+begin
+   result := TDir((Ord(self) + 3) mod 4);
+end;
+
+class function TDirHelper.FromChar(ch: Char): TDir; inline;
+begin
+   case ch of
+      '^': result := Up;
+      '>': result := Right;
+      'v': result := Left;
+      '<': result := Down;
+      else raise Exception.CreateFmt('Invalid direction character: %c', [ch]);
+   end
 end;
 
 

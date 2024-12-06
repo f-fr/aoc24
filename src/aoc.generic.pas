@@ -29,6 +29,22 @@ type
 
    EReadError = class(Exception);
 
+   TDir = (Up, Right, Down, Left);
+
+   TPos = record
+      i: Integer;
+      j: Integer;
+
+      function Step(d: TDir): TPos; inline;
+      function Step(d: TDir; n: Integer): TPos; inline;
+      function TryStep(d: TDir; n, m: Integer; out target: TPos): Boolean; inline;
+      function Dist1(p: TPos): Integer;
+
+      class function Create(Ai, Aj: Integer): TPos; static; inline;
+      class operator=(a, b: TPos): Boolean; inline;
+      class operator+(a: TPos; d: TDir): TPos; inline;
+   end;
+
    generic TRow<T> = record
    private
       type
@@ -130,6 +146,8 @@ type
    private
       function GetItem(i, j: Cardinal): T; inline;
       procedure SetItem(i, j: Cardinal; value:T); inline;
+      function GetItem(p: TPos): T; inline;
+      procedure SetItem(p: TPos; value:T); inline;
 
       function GetRow(i: Cardinal): TRow; inline;
       function GetCol(j: Cardinal): TCol; inline;
@@ -143,6 +161,11 @@ type
       procedure LoadFromStream(input: TStream);
       procedure NoBoundary;
 
+      function Find(value: T): TPos; inline;
+      function TryFind(value: T; out pos: TPos): Boolean;
+      function FindOf(values: array of T): TPos; inline;
+      function TryFindOf(values: array of T; out pos: TPos): Boolean;
+
       function Rows: TRowEnum;
       function Cols: TColEnum;
 
@@ -151,6 +174,7 @@ type
       property N: Cardinal read Fnrows;
       property M: Cardinal read Fncols;
       property Items[i: Cardinal; j: Cardinal]: T read GetItem write SetItem; default;
+      property At[p: TPos]: T read GetItem write SetItem;
       property Row[i: Cardinal]: TRow read GetRow;
       property Col[j: Cardinal]: TCol read GetCol;
       property Boundary: T read Fboundary write SetBoundary;
@@ -163,6 +187,60 @@ type
    generic function CRT<T>(a, m: array of T; out x: T): Boolean;
 
 implementation
+
+{ TPos }
+function TPos.Step(d: TDir): TPos; inline;
+begin
+   result := self;
+   case d of
+      Up: result.i -= 1;
+      Right: result.j += 1;
+      Down: result.i += 1;
+      Left: result.j -= 1;
+   end
+end;
+
+function TPos.Step(d: TDir; n: Integer): TPos; inline;
+begin
+   result := self;
+   case d of
+      Up: result.i -= n;
+      Right: result.j += n;
+      Down: result.i += n;
+      Left: result.j -= n;
+   end
+end;
+
+function TPos.TryStep(d: TDir; n, m: Integer; out target: TPos): Boolean; inline;
+var
+   tgt: TPos;
+begin
+   tgt := self.Step(d);
+   result := (0 <= tgt.i) and (tgt.i < n) and (0 <= tgt.j) and (tgt.j < m);
+   if result then target := tgt;
+end;
+
+function TPos.Dist1(p: TPos): Integer;
+begin
+   result := Abs(i - p.i) + Abs(j - p.j);
+end;
+
+class function TPos.Create(Ai, Aj: Integer): TPos;
+begin
+   result.i := Ai;
+   result.j := Aj;
+end;
+
+class operator TPos.=(a, b: TPos): Boolean; inline;
+begin
+   result := (a.i = b.i) and (a.j = b.j);
+end;
+
+class operator TPos.+(a: TPos; d: TDir): TPos; inline;
+begin
+   result := a.Step(d);
+end;
+
 
 { TRow }
 
@@ -360,6 +438,16 @@ begin
    Fitems[Fstart + i * Fskip + j] := value;
 end;
 
+function TGenGrid.GetItem(p: TPos): T;
+begin
+   result := GetItem(p.i, p.j);
+end;
+
+procedure TGenGrid.SetItem(p: TPos; value: T);
+begin
+   SetItem(p.i, p.j, value);
+end;
+
 function TGenGrid.GetRow(i: Cardinal): TRow;
 begin
    assert(i < Fnrows);
@@ -387,6 +475,54 @@ function TGenGrid.Cols: TColEnum;
 begin
    result.Fgrid := self;
    result.Findex := 0;
+end;
+
+function TGenGrid.TryFind(value: T; out pos: TPos): Boolean;
+var
+   i, j: Integer;
+begin
+   for i := 0 to N-1 do
+      for j := 0 to M-1 do
+         if Items[i, j] = value then begin
+            pos.i := i;
+            pos.j := j;
+            exit(True);
+         end;
+   result := False;
+end;
+
+function TGenGrid.Find(value: T): TPos; inline;
+begin
+   if not TryFind(value, result) then begin
+      result.i := -1;
+      result.j := -1;
+   end
+end;
+
+function TGenGrid.TryFindOf(values: array of T; out pos: TPos): Boolean;
+var
+   i, j: Integer;
+   c, x: T;
+begin
+   for i := 0 to N-1 do
+      for j := 0 to M-1 do begin
+         x := Items[i, j];
+         for c in values do
+            if x = c then begin
+               pos.i := i;
+               pos.j := j;
+               exit(True);
+            end;
+      end;
+   result := False;
+end;
+
+function TGenGrid.FindOf(values: array of T): TPos; inline;
+begin
+   if not TryFindOf(values, result) then begin
+      result.i := -1;
+      result.j := -1;
+   end
 end;
 
 function TGenGrid.ToString: String;

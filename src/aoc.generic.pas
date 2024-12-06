@@ -257,9 +257,12 @@ begin
 end;
 
 function TRow.ToString: String;
+var
+   i: Integer;
 begin
-   SetString(result, Fitems, Flen);
-   SetCodePage(RawByteString(result), CP_ACP, True);
+   SetLength(result, Flen);
+   for i := 1 to Flen do
+      result[i] := Char(self[i - 1]);
 end;
 
 { TCol }
@@ -281,7 +284,7 @@ var
 begin
    SetLength(result, Flen);
    for i := 1 to Flen do
-      result[i] := Fitems[(i - 1) * Fskip];
+      result[i] := Char(Fitems[(i - 1) * Fskip]);
 end;
 
 { TRowEnum }

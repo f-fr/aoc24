@@ -144,7 +144,7 @@ begin
          for i := 1 to grid.N - 2 do
             if grid[i,j] = '#' then k := i + 1 else gup[i,j] := k;
 
-         k := grid.M - 1;
+         k := grid.N - 1;
          for i := grid.N - 2 downto 1 do
             if grid[i,j] = '#' then k := i - 1 else gdown[i,j] := k;
       end;

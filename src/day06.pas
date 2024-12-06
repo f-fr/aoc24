@@ -24,13 +24,16 @@ interface
 
 implementation
 
-uses AOC, AOC.Generic, Classes, SysUtils;
+uses AOC, AOC.Generic, Classes, SysUtils, generics.collections;
 
 function Run(grid: TGrid): TResult;
+type
+   TPosList = specialize TList<TPos>;
 var
-   s, p, q: TPos;
+   s, p, q, pnew: TPos;
    sd, d: TDir;
-   i, j, k, l: Integer;
+   i, j: Integer;
+   path: TPosList = nil;
 begin
    result[1] := 0;
    result[2] := 0;
@@ -43,33 +46,33 @@ begin
    p := s;
    d := sd;
 
-   while grid.At[p] <> ' ' do begin
-      if grid.At[p] <> 'X' then begin
-         grid.At[p] := 'X';
-         Inc(result[1]);
-      end;
-      q := p + d;
-      case grid.At[q] of
-         '#': begin
-                 q := p;
-                 d := d.Clockwise;
-              end;
-         ' ': break;
+   try
+      path := TPosList.Create;
+
+      while grid.At[p] <> ' ' do begin
+         if grid.At[p] <> 'X' then begin
+            grid.At[p] := 'X';
+            if p <> s then path.Add(p);
+            Inc(result[1]);
+         end;
+         q := p + d;
+         case grid.At[q] of
+            '#': begin
+                    q := p;
+                    d := d.Clockwise;
+                 end;
+            ' ': break;
          else p := q;
-      end
-   end;
+         end
+      end;
 
-   for k := 1 to grid.N-2 do begin
-      for l := 1 to grid.M-2 do begin
-         p := TPos.Create(k, l);
-         if (s = p) or (grid.At[p] = '#') then continue;
-
-         for i := 1 to grid.N-2 do 
+      for pnew in path do begin
+         for i := 1 to grid.N-2 do
             for j := 1 to grid.M-2 do
                if grid[i,j] <> '#' then
                   grid[i,j] := Chr(0);
 
-         grid[k, l] := '#';
+         grid.At[pnew] := '#';
 
          p := s;
          d := sd;
@@ -91,8 +94,10 @@ begin
             end
          end;
 
-         grid[k, l] := Chr(0);
-      end
+         grid.At[pnew] := Chr(0);
+      end;
+   finally
+      path.Free;
    end
 end;
 

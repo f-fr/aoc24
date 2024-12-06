@@ -32,7 +32,11 @@ type
    public
       constructor Create(compare : TComparisonNested<T>);
       class function Construct(compare : TComparisonNested<T>) : IComparer<T>;
+      {$if (FPC_VERSION < 3) OR ((FPC_VERSION = 3) AND (FPC_RELEASE < 3))}
       function Compare(constref a, b : T) : Integer;
+      {$else}
+      function Compare(const a, b : T) : Integer;
+      {$endif}
    end;
 
    procedure Sort<T>(var ary : array of T); overload;
@@ -64,7 +68,11 @@ begin
    result := Create(compare);
 end;
 
+{$if (FPC_VERSION < 3) OR ((FPC_VERSION = 3) AND (FPC_RELEASE < 3))}
 function TDelegatedComparerNested<T>.Compare(constref a, b : T) : Integer;
+{$else}
+function TDelegatedComparerNested<T>.Compare(const a, b : T) : Integer;
+{$endif}
 begin
    result := Fcompare(a, b);
 end;

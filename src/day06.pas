@@ -298,10 +298,7 @@ begin
          end;
          q := p + d;
          case grid.At[q] of
-            '#': begin
-                    q := p;
-                    d := d.Clockwise;
-                 end;
+            '#': d := d.Clockwise;
             ' ': break;
          else
             p := q;

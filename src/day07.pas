@@ -26,7 +26,7 @@ implementation
 
 uses AOC, Classes, StreamEx, StrUtils, SysUtils, Math;
 
-function Check(x: Int64; nums: array of Int64; n: Integer): Boolean;
+function Check(x: Int64; nums: array of Integer; n: Integer): Boolean;
 begin
    if n = 1 then exit(nums[0] = x);
    if x < nums[n-1] then exit(False);
@@ -35,9 +35,9 @@ begin
    result := False;
 end;
 
-function Check2(x: Int64; nums: array of Int64; n: Integer): Boolean;
+function Check2(x: Int64; nums: array of Integer; n: Integer): Boolean;
 var
-   y: Int64;
+   y: Integer;
 begin
    if n = 1 then exit(nums[0] = x);
    if x < nums[n-1] then exit(False);
@@ -60,7 +60,7 @@ function Run(input: TTextReader): TResult;
 var
    line: String;
    toks: array of String;
-   nums: array of Int64 = nil;
+   nums: array of Integer = nil;
    x: Int64;
    i: Integer;
 begin
@@ -71,7 +71,7 @@ begin
       toks := line.Split([':', ' '], TStringSplitOptions.ExcludeEmpty);
       SetLength(nums, Max(Length(nums), Length(toks)));
       x := toks[0].toInt64;
-      for i := 1 to High(toks) do nums[i-1] := toks[i].toInt64;
+      for i := 1 to High(toks) do nums[i-1] := toks[i].toInteger;
       if Check(x, nums, Length(toks) - 1) then result[1] += x;
       if Check2(x, nums, Length(toks) - 1) then result[2] += x;
    end;

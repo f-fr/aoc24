@@ -61,7 +61,8 @@ var
    line: String;
    toks: array of String;
    nums: array of Int64 = nil;
-   x, i: Int64;
+   x: Int64;
+   i: Integer;
 begin
    result[1] := 0;
    result[2] := 0;

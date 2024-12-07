@@ -400,7 +400,7 @@ begin
             res := days[d][ver-1].Run(input);
             endtime := Now;
             dayTime := MillisecondsBetween(starttime, endtime) / 1000;
-            writeln(Format('day: %2d %s  part1: %10d  part2: %10d   time:%.3g',
+            writeln(Format('day: %2d %s  part1: %15d  part2: %15d   time:%.3g',
                            [d,
                             IfThen(ver > 1, Format('v%d', [ver]), '  '),
                             res[1], res[2], dayTime]));

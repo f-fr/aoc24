@@ -72,8 +72,10 @@ begin
       SetLength(nums, Max(Length(nums), Length(toks)));
       x := toks[0].toInt64;
       for i := 1 to High(toks) do nums[i-1] := toks[i].toInteger;
-      if Check(x, nums, Length(toks) - 1) then result[1] += x;
-      if Check2(x, nums, Length(toks) - 1) then result[2] += x;
+      if Check(x, nums, Length(toks) - 1) then begin
+         result[1] += x;
+         result[2] += x;
+      end else if Check2(x, nums, Length(toks) - 1) then result[2] += x;
    end;
 end;
 

@@ -24,7 +24,7 @@ interface
 
 implementation
 
-uses AOC, Classes, StreamEx, StrUtils, SysUtils, Math;
+uses AOC, Classes, EasyCSV, StrUtils, SysUtils, Math;
 
 function Check(x: Int64; nums: array of Integer; n: Integer): Boolean;
 begin
@@ -55,27 +55,28 @@ begin
    result := False;
 end;
 
-function Run(input: TTextReader): TResult;
+function Run(input: TCSVReader): TResult;
 
 var
-   line: String;
-   toks: array of String;
+   row: TCSVReader.TRow;
    nums: array of Integer = nil;
+   xs: String;
    x: Int64;
    i: Integer;
 begin
    result[1] := 0;
    result[2] := 0;
 
-   for line in input do begin
-      toks := line.Split([':', ' '], TStringSplitOptions.ExcludeEmpty);
-      SetLength(nums, Max(Length(nums), Length(toks)));
-      x := toks[0].toInt64;
-      for i := 1 to High(toks) do nums[i-1] := toks[i].toInteger;
-      if Check(x, nums, Length(toks) - 1) then begin
+   input.Delimiter := ' ';
+   for row in input.Rows do begin
+      SetLength(nums, Max(Length(nums), row.Count-1));
+      xs := row[0];
+      x := xs.SubString(0, xs.Length-1).toInt64;
+      for i := 1 to row.Count-1 do nums[i-1] := row.Integers[i];
+      if Check(x, nums, row.Count - 1) then begin
          result[1] += x;
          result[2] += x;
-      end else if Check2(x, nums, Length(toks) - 1) then result[2] += x;
+      end else if Check2(x, nums, row.Count - 1) then result[2] += x;
    end;
 end;
 

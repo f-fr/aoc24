@@ -26,7 +26,7 @@ fi
 DAYS=$(find src -maxdepth 1 -name "day??.pas" | sed -e 's!src/day\(.*\)\.pas!\1!' | sort)
 
 if  [ ! -z "$DAYS" ]; then
-    printf ", Day%02d\n" $DAYS > src/days.inc
+    printf ", Day%s\n" $DAYS > src/days.inc
 else
     echo > src/days.inc
 fi
@@ -41,11 +41,11 @@ for lpi in aoc24*.lpi; do
             --subnode '//ProjectOptions/Units' -t elem --name "Unit" \
             --var newunit '$prev' \
             --subnode '$newunit' --type elem --name "Filename" \
-            --insert '$prev' --type attr --name "Value" --value $(printf "src/day%02d.pas" $d) \
+            --insert '$prev' --type attr --name "Value" --value $(printf "src/day%s.pas" $d) \
             --subnode '$newunit' --type elem --name "IsPartOfProject" \
             --insert '$prev' --type attr --name "Value" --value "True" \
             --subnode '$newunit' --type elem --name "UnitName" \
-            --insert '$prev' --type attr --name "Value" --value $(printf "Day%02d" $d) \
+            --insert '$prev' --type attr --name "Value" --value $(printf "Day%s" $d) \
             "$lpi"
     done
 done

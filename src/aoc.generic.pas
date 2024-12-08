@@ -156,10 +156,13 @@ type
 
    public
       constructor Create(nrows: Cardinal = 0; ncols: Cardinal = 0);
+      constructor Create(nrows: Cardinal; ncols: Cardinal; init: T);
       constructor ReadFromStream(input: TStream);
 
       procedure LoadFromStream(input: TStream);
       procedure NoBoundary;
+
+      function IsValid(p: TPos): Boolean; inline;
 
       function Find(value: T): TPos; inline;
       function TryFind(value: T; out pos: TPos): Boolean;
@@ -300,6 +303,14 @@ begin
    FhasBoundary := False;
 end;
 
+constructor TGenGrid.Create(nrows: Cardinal; ncols: Cardinal; init: T);
+var
+   i: Integer;
+begin
+   Create(nrows, ncols);
+   for i := 0 to High(Fitems) do Fitems[i] := init;
+end;
+
 constructor TGenGrid.ReadFromStream(input: TStream);
 begin
    Create;
@@ -389,6 +400,11 @@ begin
       Fstart := Fskip + 1;
       FhasBoundary := False;
    end
+end;
+
+function TGenGrid.IsValid(p: TPos): Boolean; inline;
+begin
+   result := (p.i >= 0) and (p.i < N) and (p.j >= 0) and (p.j < M);
 end;
 
 function TGenGrid.GetItem(i, j: Cardinal): T;

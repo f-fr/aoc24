@@ -183,7 +183,7 @@ begin
 
       for pnew in path do begin
          for p in visited do grid.At[p] := Chr(0);
-         visited.Clear;
+         visited.Count := 0;
 
          p := s;
          d := sd;
@@ -321,7 +321,7 @@ begin
          // reset flags of previous iteration
          for v in visited do
             flags.At[v.pos] := flags.At[v.pos] and (not (1 shl Ord(v.dir)));
-         visited.Clear;
+         visited.Count := 0;
 
          pnew := path[k].pos;
          p := path[k-1].pos;

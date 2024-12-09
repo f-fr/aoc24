@@ -24,16 +24,11 @@ interface
 
 implementation
 
-uses AOC, Classes, StreamEx, PriQueue;
+uses AOC, Classes, StreamEx, Math, PriQueue;
 
-function Value(fileid, pos, len: Integer): Int64;
+function Value(fileid, pos, len: Integer): Int64; inline;
 begin
-   result := 0;
-   while len > 0 do begin
-      result += fileid * pos;
-      Inc(pos);
-      Dec(len);
-   end;
+   result := fileid * (((pos + len) * (pos + len - 1)) div 2 - (pos * (pos - 1)) div 2);
 end;
 
 function Run(input: TTextReader): TResult;
@@ -42,7 +37,7 @@ type
 var
    line: String;
    nums, nums2: array of Integer;
-   pos, i, j: Integer;
+   pos, i, j, k: Integer;
 
    fileid: Integer;
 
@@ -64,24 +59,20 @@ begin
    while i < j do begin
       // add current left file block
       fileid := i div 2;
-      while nums[i] > 0 do begin
-         result[1] += fileid * pos;
-         Inc(pos);
-         Dec(nums[i]);
-      end;
+      result[1] += Value(fileid, pos, nums[i]);
+      Inc(pos, nums[i]);
+      nums[i] := 0;
 
       // go to space
       Inc(i);
       while nums[i] > 0 do begin
          // copy from right to space
          fileid := j div 2;
-         while (nums[i] > 0) and (nums[j] > 0) do begin
-            result[1] += fileid * pos;
-            Inc(pos);
-            Dec(nums[i]);
-            Dec(nums[j]);
-         end;
-         // check if space or right file has been exceeded
+         k := Min(nums[i], nums[j]);
+         result[1] += Value(fileid, pos, k);
+         Inc(pos, k);
+         Dec(nums[i], k);
+         Dec(nums[j], k);
          if nums[j] = 0 then Dec(j, 2); // skip space
       end;
       // go to next block
@@ -89,11 +80,7 @@ begin
    end;
    // remaining blocks at right end
    fileid := j div 2;
-   while nums[j] > 0 do begin
-      result[1] += fileid * pos;
-      Inc(pos);
-      Dec(nums[j]);
-   end;
+   result[1] += Value(fileid, pos, nums[j]);
 
    try
       for i := Low(gaps) to High(gaps) do gaps[i] := TPriQueue.Create;

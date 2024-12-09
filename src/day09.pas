@@ -26,7 +26,7 @@ implementation
 
 uses AOC, Classes, StreamEx, Math, PriQueue;
 
-function Value(fileid, pos, len: Integer): Int64; inline;
+function Value(fileid: Integer; pos: Int64; len: Integer): Int64; inline;
 begin
    result := fileid * (((pos + len) * (pos + len - 1)) div 2 - (pos * (pos - 1)) div 2);
 end;

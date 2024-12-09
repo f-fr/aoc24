@@ -13,6 +13,9 @@ llvm:
     mkdir -p units/x86_64-linux-llvm
     fpc-llvm -dRELEASE -duselibc -O3 -XX -CX -Xs -FEbin/x86_64-linux-llvm -FUunits/x86_64-linux-llvm -Fusrc src/aoc24
 
+run-dbg: build
+    bin/x86_64-linux-debug/aoc24
+
 run: release
     bin/x86_64-linux-release/aoc24
 

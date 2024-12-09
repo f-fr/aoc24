@@ -4,6 +4,41 @@ unit PriQueue;
 interface
 
 type
+   // A priority queue without support for `DecreaseKey`.
+   generic TGPriQueue<T, Val> = class
+   type
+      TItem = packed record
+         data: T;
+         value: Val;
+      end;
+
+   const
+      MINCAP = 1024;
+
+   private
+      // The indices of the items.
+      Fheap: array of TItem;
+      // The number of elements in the heap.
+      Fsize: Cardinal;
+
+   public
+      constructor Create;
+      destructor Destroy; override;
+
+      procedure Push(const data: T; value: Val);
+
+      function Min: TItem; inline;
+      function TryMin(out item: TItem): Boolean; inline;
+      function PopMin: TItem;
+      function TryPopMin(out item: TItem): Boolean;
+      function IsEmpty: Boolean; inline;
+
+      property Size: Cardinal read Fsize;
+
+   private
+      class function Max(a, b: Cardinal): Cardinal;
+   end;
+
    // A Heap is a priority queue with support for `DecreaseKey`.
    generic TGHeap<T, Val> = class
    type
@@ -55,6 +90,110 @@ type
    end;
 
 implementation
+
+{ TGPriQueue }
+
+constructor TGPriQueue.Create;
+begin
+   Fsize := 0;
+end;
+
+destructor TGPriQueue.Destroy;
+begin
+end;
+
+class function TGPriQueue.Max(a, b: Cardinal): Cardinal;
+begin
+   if a > b then result := a else result := b;
+end;
+
+procedure TGPriQueue.Push(const data: T; value: Val);
+var
+   pos, parent_pos: Cardinal;
+begin
+   if Fsize = Length(Fheap) then SetLength(Fheap, Max(16, Fsize * 2));
+
+   // put element at the end of the heap
+   pos := Fsize;
+   Fheap[pos].data := data;
+   Fheap[pos].value := value;
+   inc(Fsize);
+
+   while pos > 0 do begin
+      parent_pos := (pos - 1) div 2;
+      if Fheap[parent_pos].value < value then break;
+      Fheap[pos] := Fheap[parent_pos];
+      pos := parent_pos;
+   end;
+
+   Fheap[pos].data := data;
+   Fheap[pos].value := value;
+end;
+
+function TGPriQueue.TryMin(out item: TItem): Boolean; inline;
+begin
+   result := Fsize > 0;
+   if result then item := Fheap[0];
+end;
+
+function TGPriQueue.Min: TItem;
+begin
+   assert(Fsize > 0);
+   result := Fheap[0];
+end;
+
+function TGPriQueue.TryPopMin(out item: TItem): Boolean;
+var
+   lastvalue: Val;
+   i, ileft, iright, inxt: Cardinal;
+begin
+   result := Fsize > 0;
+   if not result then exit(False);
+   if Fsize = 1 then begin
+      item := Fheap[0];
+      Fsize := 0;
+      exit;
+   end;
+
+   item := Fheap[0];
+
+   dec(Fsize);
+   lastvalue := Fheap[Fsize].value;
+
+   i := 0;
+   while true do begin
+      ileft := 2 * i + 1;
+      iright := ileft + 1;
+      { No children -> found insert position }
+      if ileft >= Fsize then break;
+      { Find smaller of both children }
+      if iright >= Fsize then
+         inxt := ileft
+      else if Fheap[ileft].value < Fheap[iright].value then
+         inxt := ileft
+      else
+         inxt := iright;
+      { if the smaller children is larger than value -> found insert position }
+      if Fheap[inxt].value >= lastvalue then break;
+      { move this child up }
+      Fheap[i] := Fheap[inxt];
+      i := inxt;
+   end;
+   Fheap[i] := Fheap[Fsize];
+end;
+
+function TGPriQueue.PopMin: TItem;
+begin
+   assert(Fsize > 0);
+   TryPopMin(result);
+end;
+
+function TGPriQueue.IsEmpty: Boolean;
+begin
+   result := Fsize = 0;
+end;
+
+{ TGHeap }
 
 constructor TGHeap.Create;
 begin

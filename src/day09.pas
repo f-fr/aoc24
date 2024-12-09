@@ -38,7 +38,7 @@ end;
 
 function Run(input: TTextReader): TResult;
 type
-   TPriQueue = specialize TGPriQueue<Integer, Integer>;
+   TPriQueue = specialize TGHeap<Integer, Integer>;
 var
    line: String;
    nums, nums2: array of Integer;

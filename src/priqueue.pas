@@ -4,7 +4,8 @@ unit PriQueue;
 interface
 
 type
-   generic TGPriQueue<T, Val> = class
+   // A Heap is a priority queue with support for `DecreaseKey`.
+   generic TGHeap<T, Val> = class
    type
       TItem = packed record
          data: T;
@@ -41,8 +42,10 @@ type
       function Push(const data: T; value: Val) : TRef;
       procedure DecreaseKey(const item : TRef; value: Val);
 
-      function Min: TItem;
+      function Min: TItem; inline;
+      function TryMin(out item: TItem): Boolean; inline;
       function PopMin: TItem;
+      function TryPopMin(out item: TItem): Boolean;
       function IsEmpty: Boolean; inline;
 
       property Size: Cardinal read Fsize;
@@ -53,22 +56,22 @@ type
 
 implementation
 
-constructor TGPriQueue.Create;
+constructor TGHeap.Create;
 begin
    Fsize := 0;
    Ffree := High(Cardinal);
 end;
 
-destructor TGPriQueue.Destroy;
+destructor TGHeap.Destroy;
 begin
 end;
 
-class function TGPriQueue.Max(a, b: Cardinal): Cardinal;
+class function TGHeap.Max(a, b: Cardinal): Cardinal;
 begin
    if a > b then result := a else result := b;
 end;
 
-function TGPriQueue.Push(const data: T; value: Val) : TRef;
+function TGHeap.Push(const data: T; value: Val) : TRef;
 var
    idx: Cardinal;
    i: Integer;
@@ -101,7 +104,7 @@ begin
    DecreaseKey(result, value);
 end;
 
-procedure TGPriQueue.DecreaseKey(const item: TRef; value: Val);
+procedure TGHeap.DecreaseKey(const item: TRef; value: Val);
 var
    pos, parent_pos: Cardinal;
    idx, parent_idx: Cardinal;
@@ -125,21 +128,28 @@ begin
    Felems[idx].value := value;
 end;
 
-function TGPriQueue.Min: TItem;
+function TGHeap.TryMin(out item: TItem): Boolean; inline;
+begin
+   result := Fsize > 0;
+   if result then item := Felems[Fheap[0]];
+end;
+
+function TGHeap.Min: TItem;
 begin
    assert(Fsize > 0);
    result := Felems[Fheap[0]];
 end;
 
-function TGPriQueue.PopMin: TItem;
+function TGHeap.TryPopMin(out item: TItem): Boolean;
 var
    minidx, lastidx: Cardinal;
    lastvalue: Val;
    i, ileft, iright, inxt: Cardinal;
 begin
-   assert(Fsize > 0);
+   result := Fsize > 0;
+   if not result then exit(False);
    if Fsize = 1 then begin
-      result := Felems[Fheap[0]];
+      item := Felems[Fheap[0]];
 
       minidx := Fheap[0];
       Felems[minidx].pos := Ffree;
@@ -151,7 +161,7 @@ begin
    end;
 
    minidx := Fheap[0];
-   result := Felems[minidx];
+   item := Felems[minidx];
 
    dec(Fsize);
    lastidx := Fheap[Fsize];
@@ -183,7 +193,13 @@ begin
    Ffree := minidx;
 end;
 
-function TGPriQueue.IsEmpty: Boolean;
+function TGHeap.PopMin: TItem;
+begin
+   assert(Fsize > 0);
+   TryPopMin(result);
+end;
+
+function TGHeap.IsEmpty: Boolean;
 begin
    result := Fsize = 0;
 end;

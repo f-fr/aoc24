@@ -26,33 +26,25 @@ implementation
 
 uses AOC, Classes, EasyCSV, StrUtils, SysUtils, Math;
 
-function Check(x: Int64; nums: array of Integer; n: Integer): Boolean;
-begin
-   if n = 1 then exit(nums[0] = x);
-   if x < nums[n-1] then exit(False);
-   if (x mod nums[n-1] = 0) and Check(x div nums[n-1], nums, n-1) then exit(True);
-   if Check(x - nums[n-1], nums, n-1) then exit(True);
-   result := False;
-end;
-
-function Check2(x: Int64; nums: array of Integer; n: Integer): Boolean;
+function Check(x: Int64; nums: array of Integer; n: Integer; concat: Boolean = false): Boolean;
 var
    y: Integer;
 begin
    if n = 1 then exit(nums[0] = x);
    if x < nums[n-1] then exit(False);
-   if (x mod nums[n-1] = 0) and Check2(x div nums[n-1], nums, n-1) then exit(True);
-   if Check2(x - nums[n-1], nums, n-1) then exit(True);
+   if (x mod nums[n-1] = 0) and Check(x div nums[n-1], nums, n-1, concat) then exit(True);
+   if Check(x - nums[n-1], nums, n-1, concat) then exit(True);
 
-   y := nums[n-1];
-   while (y > 0) and (y mod 10 = x mod 10) do begin
-      x := x div 10;
-      y := y div 10;
-   end;
+   result := concat;
+   if concat then begin
+      y := nums[n-1];
+      while (y > 0) and (y mod 10 = x mod 10) do begin
+         x := x div 10;
+         y := y div 10;
+      end;
 
-   if (y = 0) and Check2(x, nums, n-1) then exit(True);
-
-   result := False;
+      result := (y = 0) and Check(x, nums, n-1, concat);
+   end
 end;
 
 function Run(input: TCSVReader): TResult;
@@ -76,7 +68,7 @@ begin
       if Check(x, nums, row.Count - 1) then begin
          result[1] += x;
          result[2] += x;
-      end else if Check2(x, nums, row.Count - 1) then result[2] += x;
+      end else if Check(x, nums, row.Count - 1, True) then result[2] += x;
    end;
 end;
 

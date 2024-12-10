@@ -36,10 +36,8 @@ type
    TPriQueue = specialize TGPriQueue<Integer, Integer>;
 var
    line: String;
-   nums, nums2: array of Integer;
-   pos, i, j, k: Integer;
-
-   fileid: Integer;
+   nums: array of Integer;
+   pos, i, j, k, x, y: Integer;
 
    gaps: array[1..9] of TPriQueue;
    best: TPriQueue.TItem;
@@ -51,57 +49,58 @@ begin
    SetLength(nums, Length(line));
    for i := 1 to Length(line) do
       nums[i-1] := Ord(line[i]) - Ord('0');
-   nums2 := Copy(nums);
 
    i := 0;
    j := Length(line) - 1;
    pos := 0;
+   y := nums[j];
    while i < j do begin
       // add current left file block
-      fileid := i div 2;
-      result[1] += Value(fileid, pos, nums[i]);
+      result[1] += Value(i div 2, pos, nums[i]);
       Inc(pos, nums[i]);
-      nums[i] := 0;
 
       // go to space
       Inc(i);
-      while nums[i] > 0 do begin
+      x := nums[i];
+      while x > 0 do begin
          // copy from right to space
-         fileid := j div 2;
-         k := Min(nums[i], nums[j]);
-         result[1] += Value(fileid, pos, k);
-         Inc(pos, k);
-         Dec(nums[i], k);
-         Dec(nums[j], k);
-         if nums[j] = 0 then Dec(j, 2); // skip space
+         k := Min(x, y);
+         result[1] += Value(j div 2, pos, k);
+         pos += k;
+         x -= k;
+         y -= k;
+         if y = 0 then begin
+            j -= 2; // skip space
+            if j <= i then break;
+            y := nums[j];
+         end
       end;
       // go to next block
       Inc(i);
    end;
    // remaining blocks at right end
-   fileid := j div 2;
-   result[1] += Value(fileid, pos, nums[j]);
+   result[1] += Value(j div 2, pos, y);
 
    try
       for i := Low(gaps) to High(gaps) do gaps[i] := TPriQueue.Create;
       i := 0;
       pos := 0;
-      while i < Length(nums2) do begin
-         pos += nums2[i];
+      while i < Length(nums) do begin
+         pos += nums[i];
          Inc(i);
-         if (i < Length(nums2)) and (nums2[i] > 0) then begin
-            gaps[nums2[i]].Push(nums2[i], pos);
-            pos += nums2[i];
+         if (i < Length(nums)) and (nums[i] > 0) then begin
+            gaps[nums[i]].Push(nums[i], pos);
+            pos += nums[i];
          end;
          Inc(i);
       end;
 
-      j := Length(nums2) - 1;
+      j := Length(nums) - 1;
       while j >= 0 do begin
-         pos -= nums2[j];
+         pos -= nums[j];
 
          best.value := pos;
-         for i := nums2[j] to 9 do begin
+         for i := nums[j] to 9 do begin
             if (not gaps[i].IsEmpty) and (gaps[i].Min.Value < best.value) then begin
                best := gaps[i].Min;
                assert(best.data = i);
@@ -109,16 +108,16 @@ begin
          end;
 
          if best.value = pos then
-            result[2] += Value(j div 2, pos, nums2[j]) // no gap found
+            result[2] += Value(j div 2, pos, nums[j]) // no gap found
          else begin
             // move to gap
             gaps[best.data].PopMin;
             // new smaller gap
-            if best.data > nums2[j] then gaps[best.data - nums2[j]].Push(best.data - nums2[j], best.value + nums2[j]);
-            result[2] += Value(j div 2, best.value, nums2[j]);
+            if best.data > nums[j] then gaps[best.data - nums[j]].Push(best.data - nums[j], best.value + nums[j]);
+            result[2] += Value(j div 2, best.value, nums[j]);
          end;
 
-         if j > 0 then pos -= nums2[j-1];
+         if j > 0 then pos -= nums[j-1];
          Dec(j, 2);
       end;
    finally

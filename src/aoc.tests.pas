@@ -43,25 +43,27 @@ type
       Fversion: Integer;
       Frunner: TRunner;
       Fpart: TPart;
+      FfilePath: String;
 
    public
-      constructor Create(ADay: TDay; AVersion: Integer; ARunner: TRunner; APart: TPart); reintroduce;
+      constructor Create(ADay: TDay; AVersion: Integer; ARunner: TRunner; APart: TPart; FilePath: String); reintroduce;
       destructor Destroy; override;
 
       procedure RunPartTest(part: TPart);
       procedure RunTest; override;
    end;
 
-constructor TDayTestCase.Create(ADay: TDay; AVersion: Integer; ARunner: TRunner; APart: TPart);
+constructor TDayTestCase.Create(ADay: TDay; AVersion: Integer; ARunner: TRunner; APart: TPart; FilePath: String);
 begin
    if AVersion = 1 then
-      inherited CreateWithName(Format('Test Part %d', [APart]))
+      inherited CreateWithName(Format('Test Part %d (%s)', [APart, ExtractFileName(FilePath)]))
    else
-     inherited CreateWithName(Format('Test Part %d Version %d', [APart, AVersion]));
+     inherited CreateWithName(Format('Test Part %d Version %d (%s)', [APart, AVersion, ExtractFileName(FilePath)]));
    Frunner := ARunner;
    Fday := ADay;
    Fversion := AVersion;
    Fpart := APart;
+   FfilePath := FilePath;
 end;
 
 destructor TDayTestCase.Destroy;
@@ -71,8 +73,6 @@ end;
 
 procedure TDayTestCase.RunPartTest(part: TPart);
 var
-   info: TSearchRec;
-   dir, filename: String;
    input: TStringList = nil;
    mem: TMemoryStream = nil;
 
@@ -81,42 +81,34 @@ var
    Expected: Int64;
    res: TResult;
 begin
-   dir := Format('input/%.2d', [Fday]);
-   if FindFirst(ConcatPaths([dir, 'test*.txt']), 0, info) <> 0 then exit;
-
    try
       input := TStringList.Create;
       mem := TMemoryStream.Create;
-      repeat
-         input.LoadFromFile(ConcatPaths([dir, info.Name]));
-         if input.Count <= 1 then continue; // ignore empty files
-         i := input[0].IndexOf(':');
-         AssertTrue('First test line must be ''EXPECTED: <number>''', (i >= 0) and ('EXPECTED' = input[0].SubString(0, i).Trim));
 
-         FileName := info.Name;
-         if FileName.StartsWith('test_part') then begin
-            // single part test
-            if Ord(FileName[10]) - Ord('0') <> part then continue; // skip tests for other part
-            Expected := StrToInt64(input[0].SubString(i+1));
-         end else begin
-            // both parts test
-            Expecteds := input[0].SubString(i+1).Split(' ', TStringSplitOptions.ExcludeEmpty);
-            AssertEquals('Exactly two numbers expected in expectation line (EXPECTED: <number1> <number2>)', 2, Length(Expecteds));
-            Expected := StrToInt64(Expecteds[part - 1]);
-         end;
+      input.LoadFromFile(FFilePath);
+      if input.Count <= 1 then exit; // ignore empty files
+      i := input[0].IndexOf(':');
+      AssertTrue('First test line must be ''EXPECTED: <number>''', (i >= 0) and ('EXPECTED' = input[0].SubString(0, i).Trim));
 
-         input.Delete(0);
-         mem.Clear;
-         input.SaveToStream(mem);
-         mem.Position := 0;
+      if StartsStr('test_part', ExtractFileName(FfilePath)) then begin
+         Expected := StrToInt64(input[0].SubString(i+1));
+      end else begin
+         // both parts test
+         Expecteds := input[0].SubString(i+1).Split(' ', TStringSplitOptions.ExcludeEmpty);
+         AssertEquals('Exactly two numbers expected in expectation line (EXPECTED: <number1> <number2>)', 2, Length(Expecteds));
+         Expected := StrToInt64(Expecteds[Fpart - 1]);
+      end;
 
-         res := Frunner.Run(mem);
-         AssertEquals(Expected, res[part]);
-      until FindNext(info) <> 0;
+      input.Delete(0);
+      mem.Clear;
+      input.SaveToStream(mem);
+      mem.Position := 0;
+
+      res := Frunner.Run(mem);
+      AssertEquals(Expected, res[part]);
    finally
       mem.Free;
       input.Free;
-      FindClose(info);
    end;
 end;
 
@@ -127,11 +119,36 @@ end;
 
 procedure AddTest(ADay: TDay; AVersion: Integer; ARunner: TRunner);
 var
+   info: TSearchRec;
+   dir, filename: String;
    suite: String;
 begin
    suite := Format('Day%.2d', [ADay]);
-   RegisterTest(suite, TDayTestCase.Create(ADay, AVersion, ARunner, 1));
-   RegisterTest(suite, TDayTestCase.Create(ADay, AVersion, ARunner, 2));
+   dir := Format('input/%.2d', [Aday]);
+
+   // scan test input files and create test cases
+   if FindFirst(ConcatPaths([dir, 'test*.txt']), 0, info) <> 0 then exit;
+
+   try
+      repeat
+         FileName := info.Name;
+         if FileName.StartsWith('test_part') then begin
+            // single part test
+            case FileName[10] of
+               '1': RegisterTest(suite, TDayTestCase.Create(ADay, AVersion, ARunner, 1, ConcatPaths([dir, FileName])));
+               '2': RegisterTest(suite, TDayTestCase.Create(ADay, AVersion, ARunner, 2, ConcatPaths([dir, FileName])));
+            else
+               raise Exception.CreateFmt('Invalid test case part: %c (must be test_part1 or test_part2)', [FileName[10]]);
+            end;
+         end else begin
+            // both parts test
+            RegisterTest(suite, TDayTestCase.Create(ADay, AVersion, ARunner, 1, ConcatPaths([dir, FileName])));
+            RegisterTest(suite, TDayTestCase.Create(ADay, AVersion, ARunner, 2, ConcatPaths([dir, FileName])));
+         end;
+      until FindNext(info) <> 0;
+   finally
+      FindClose(info);
+   end;
 end;
 
 end.

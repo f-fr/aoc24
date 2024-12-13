@@ -35,6 +35,9 @@ type
       i: Integer;
       j: Integer;
 
+      procedure SetItem(idx: Integer; value: Integer); inline;
+      function GetItem(idx: Integer): Integer; inline;
+
       function Step(d: TDir): TPos; inline;
       function Step(d: TDir; n: Integer): TPos; inline;
       function TryStep(d: TDir; n, m: Integer; out target: TPos): Boolean; inline;
@@ -43,6 +46,8 @@ type
       class function Create(Ai, Aj: Integer): TPos; static; inline;
       class operator=(a, b: TPos): Boolean; inline;
       class operator+(a: TPos; d: TDir): TPos; inline;
+
+      property Items[idx: Integer]: Integer read GetItem write SetItem; default;
    end;
 
    generic TRow<T> = record
@@ -192,6 +197,28 @@ type
 implementation
 
 { TPos }
+
+procedure TPos.SetItem(idx: Integer; value: Integer); inline;
+begin
+   case idx of
+      1: i := value;
+      2: j := value;
+   else
+      assert(False, 'Invalid index');
+   end
+end;
+
+function TPos.GetItem(idx: Integer): Integer; inline;
+begin
+   case idx of
+      1: result := i;
+      2: result := j;
+   else
+      assert(False, 'Invalid index');
+      result := 0;
+   end
+end;
+
 function TPos.Step(d: TDir): TPos; inline;
 begin
    result := self;

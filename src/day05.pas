@@ -48,7 +48,7 @@ var
 
 var
    row: TCSVReader.TRow;
-   nodes: TIntArray;
+   nodes: TIntArray = nil;
    e: TEdge;
    i: Integer;
    valid: Boolean;

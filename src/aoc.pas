@@ -150,7 +150,7 @@ type
    procedure RegisterDay(day: TDay; run: TStringsRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TGridRunFunction; Version: Integer = 1);
    procedure RegisterDay(day: TDay; run: TCSVRunFunction; Version: Integer = 1);
-   procedure RunDay(day: TDayOrZero; version: Integer; const inputFileName: String);
+   procedure RunDay(day: TDayOrZero; version: Integer; const inputFileName: String; updateReadme: Boolean = False);
 
 implementation
 
@@ -365,7 +365,18 @@ begin
    RegisterDay(day, TCSVRunner.Create(run), Version);
 end;
 
-procedure RunDay(day: TDayOrZero; Version: Integer; const inputFileName: String);
+procedure RunDay(day: TDayOrZero; Version: Integer; const inputFileName: String; updateReadme: Boolean);
+const
+   {$ifdef CPUX86_64}
+   cpu = 'AMD Ryzen 5 Pro 7530U';
+   {$else}
+   cpu = 'RasPi2 ARMv7 Processor rev 5';
+   {$endif}
+   {$ifdef CPULLVM}
+   llvm = ' (LLVM)';
+   {$else}
+   llvm = ' (FPC native)';
+   {$endif}
 var
    input: TStream = nil;
    res: TResult;
@@ -375,6 +386,10 @@ var
    dayTime: Double = 0;
    bestDayTime: Double = 0;
    totalTime: Double = 0;
+
+   readme: TStringList = nil;
+   line: String;
+   i, j, tblbeg, tblend: Integer;
 begin
    if (day < 0) or (day > Length(days)) then
       raise EArgumentOutOfRangeException.CreateFmt('Unknown day: %d', [day]);
@@ -386,33 +401,96 @@ begin
          raise EArgumentException.Create('Version must be 0 if running all days');
    end;
 
-   for d := IfThen(day > 0, day, Low(days)) to IfThen(day > 0, day, High(days)) do begin
-      bestDayTime := Infinity;
-      for ver := 1 to Length(days[d]) do begin
-         if (Version > 0) and (Version <> ver) then continue;
+   try
+      if updateReadme then begin
+         readme := TStringList.Create;
+         readme.LoadFromFile('README.md');
 
-         try
-            if inputFileName <> '' then
-               input := TFileStream.Create(inputFileName, fmOpenRead)
-            else
-               input := TFileStream.Create(Format('input/%.2d/input1.txt', [d]), fmOpenRead);
-            starttime := Now;
-            res := days[d][ver-1].Run(input);
-            endtime := Now;
-            dayTime := MillisecondsBetween(starttime, endtime) / 1000;
-            writeln(Format('day: %2d %s  part1: %15d  part2: %15d   time:%.3g',
-                           [d,
-                            IfThen(ver > 1, Format('v%d', [ver]), '  '),
-                            res[1], res[2], dayTime]));
-            bestDayTime := Min(bestDayTime, dayTime);
-         finally
-            FreeAndNil(input);
-         end
+         for tblend := 0 to readme.Count - 1 do begin
+            if readme[tblend].TrimLeft.StartsWith('**' + cpu + llvm) then break;
+         end;
+         if tblend >= readme.Count - 1 then raise Exception.Create('No table found in README.md');
+         tblbeg := tblend - 1;
+
+         // skip empty lines and total time
+         while (tblbeg > 0)
+               and ((readme[tblbeg].Trim.Length = 0)
+                    or (readme[tblbeg].Trim.StartsWith('Total time:')))
+         do Dec(tblbeg);
+
+         // skip table
+         if (tblbeg > 0) and readme[tblbeg].TrimLeft.StartsWith('|') then begin
+            while (tblbeg > 0) and readme[tblbeg].TrimLeft.StartsWith('|') do Dec(tblbeg);
+            tblbeg += 1;
+         end else begin
+            // no real table found, insert an empty line
+            tblbeg += 1;
+            readme.Insert(tblbeg, '');
+            tblbeg += 1;
+            tblend += 1;
+         end;
+
+         // remove old table except for caption
+         for i := tblbeg to tblend - 1 do readme.Delete(tblbeg);
+
+         // add table header
+         line := '| day | version | %15s | %15s | time (ms)|'.Format(['part1', 'part2']);
+         readme.Insert(tblbeg, '  ' + line);
+         for i := 1 to line.Length do
+            if line[i] <> '|' then
+               line[i] := '-'
+            else if i > 1 then
+               line[i-1] := ':';
+         line[2] := ':';
+         line[8] := ':';
+         readme.Insert(tblbeg+1, '  ' + line);
+         readme.Insert(tblbeg + 2, '');
+         tblend := tblbeg + 2;
       end;
-      if bestDayTime < Infinity then totalTime += bestDayTime;
-   end;
 
-   if day = 0 then writeln(Format('Total time: %.3g', [totalTime]));
+      for d := IfThen(day > 0, day, Low(days)) to IfThen(day > 0, day, High(days)) do begin
+         bestDayTime := Infinity;
+         for ver := 1 to Length(days[d]) do begin
+            if (Version > 0) and (Version <> ver) then continue;
+
+            try
+               if inputFileName <> '' then
+                  input := TFileStream.Create(inputFileName, fmOpenRead)
+               else
+                  input := TFileStream.Create(Format('input/%.2d/input1.txt', [d]), fmOpenRead);
+               starttime := Now;
+               res := days[d][ver-1].Run(input);
+               endtime := Now;
+               dayTime := MillisecondsBetween(starttime, endtime) / 1000;
+               if not updateReadme then begin
+                  writeln(Format('day: %2d %s  part1: %15d  part2: %15d   time:%.3g',
+                                 [d,
+                                  IfThen(ver > 1, Format('v%d', [ver]), '  '),
+                                  res[1], res[2], dayTime]));
+               end else begin
+                  readme.Insert(tblend, '  | %3d | %7d | %15d | %15d | %8.3g |'.Format(
+                                   [d, ver, res[1], res[2], dayTime]));
+                  tblend += 1;
+               end;
+               bestDayTime := Min(bestDayTime, dayTime);
+            finally
+               FreeAndNil(input);
+            end
+         end;
+         if bestDayTime < Infinity then totalTime += bestDayTime;
+      end;
+
+      if not updateReadme then begin
+         if day = 0 then writeln(Format('Total time: %.3g', [totalTime]));
+      end else begin
+         readme.Insert(tblend, '');
+         tblend += 1;
+         readme.Insert(tblend, '  Total time: %3.g ms'.Format([totalTime]));
+         readme.SaveToFile('README.md');
+      end;
+   finally
+      readme.Free;
+   end
 end;
 
 {$ifdef TESTING}

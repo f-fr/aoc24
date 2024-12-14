@@ -38,15 +38,19 @@ end;
 
 procedure ShowHelp;
 begin
-   writeln('Usage: ', ParamStr(0), ' [-v VERSION] [DAY] [INPUT]');
+   writeln('Usage: ', ParamStr(0), ' [-v VERSION] [-r] [DAY] [INPUT]');
    writeln;
-   writeln('If no DAY is specified, all days and versions are run.');
+   writeln('  If no DAY is specified, all days and versions are run.');
    writeln;
-   writeln('If no INPUT file is specified, the input for each day is assumed to be');
-   writeln('./input/DAY/input1.txt');
+   writeln('  If no INPUT file is specified, the input for each day is assumed to be');
+   writeln('  ./input/DAY/input1.txt');
    writeln;
-   writeln('An input file can only be specified for a single day.');
-      
+   writeln('  An input file can only be specified for a single day.');
+   writeln;
+   writeln('Parameters');
+   writeln('  -v VERSION      run only specified version');
+   writeln('  -r              update running time table in README.md');
+
    halt(0);
 end;
 
@@ -54,6 +58,7 @@ var
    day: Integer = 0;
    version: Integer = 0;
    inputFileName: String = '';
+   updateReadme: Boolean = false;
 
    i: Integer;
 begin
@@ -65,7 +70,9 @@ begin
          Inc(i);
          if i > ParamCount then Fail('Missing version after -v');
          if not TryStrToInt(ParamStr(i), Version) then Fail('Invalid version: %s', [ParamStr(i)]);
-      end else if day = 0 then begin
+      end else if ParamStr(i) = '-r' then
+         updateReadme := true
+      else if day = 0 then begin
          if not TryStrToInt(ParamStr(i), day) then Fail('Invalid day: %s', [ParamStr(i)]);
          if (day < 1) or (day > 25) then Fail('Invalid day, got %d (expected day ∈ {1, …, 25})', [day]);
       end else if inputFileName <> '' then
@@ -78,7 +85,7 @@ begin
    {$ifdef DEBUG}
    try
    {$endif}
-      RunDay(day, Version, inputFileName);
+      RunDay(day, Version, inputFileName, updateReadme);
    {$ifdef DEBUG}
    except
       on e: Exception do begin

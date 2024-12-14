@@ -22,6 +22,10 @@ run: release
 run-llvm: llvm
     bin/x86_64-linux-llvm/aoc24
 
+table: release llvm
+    bin/x86_64-linux-release/aoc24 -r
+    bin/x86_64-linux-llvm/aoc24 -r
+
 test:
     mkdir -p bin/x86_64-linux-debug
     mkdir -p units/x86_64-linux-debug

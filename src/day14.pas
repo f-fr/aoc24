@@ -291,7 +291,8 @@ begin
       end;
 
       result[1] := q[0] * q[1] * q[2] * q[3];
-      result[2] := i;
+      if CRT([best_i, best_j], [n, m], i) then
+         result[2] := i;
    finally
       ps.Free;
       vs.Free;

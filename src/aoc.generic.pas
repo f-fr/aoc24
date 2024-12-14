@@ -656,7 +656,7 @@ begin
 
    if Length(a) = 1 then begin
       x := a[0];
-      exit(False);
+      exit(True);
    end;
 
    a0 := a[0];

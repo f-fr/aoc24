@@ -46,6 +46,7 @@ type
       class function Create(Ai, Aj: Integer): TPos; static; inline;
       class operator=(a, b: TPos): Boolean; inline;
       class operator+(a: TPos; d: TDir): TPos; inline;
+      class operator-(a: TPos; d: TDir): TPos; inline;
 
       property Items[idx: Integer]: Integer read GetItem write SetItem; default;
    end;
@@ -269,6 +270,11 @@ end;
 class operator TPos.+(a: TPos; d: TDir): TPos; inline;
 begin
    result := a.Step(d);
+end;
+
+class operator TPos.-(a: TPos; d: TDir): TPos; inline;
+begin
+   result := a.Step(d, -1);
 end;
 
 

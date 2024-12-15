@@ -246,7 +246,7 @@ begin
       best_iscore := 0;
       best_jscore := 0;
 
-      for i := 1 to Max(m, n) do begin
+      for i := 1 to Max(100, Max(m, n)) do begin
          for j := 0 to n-1 do iscores[j] := 0;
          for j := 0 to m-1 do jscores[j] := 0;
 

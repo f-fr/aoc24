@@ -346,33 +346,78 @@ end;
 
 procedure TGenGrid.LoadFromStream(input: TStream);
 var
-   lines: TStringList = nil;
+   buf: array[0..1023] of char;
+   bufbeg, bufend, eol, pos, nread: Integer;
+
    line: String;
+   rws: TStringList = nil;
    i, j: Cardinal;
 begin
    Fnrows := 0;
    Fncols := 0;
    try
-      lines := TStringList.Create;
-      lines.LoadFromStream(input, True); // ignore the encoding
-      if lines.Count = 0 then begin
-         Fitems := nil;
-         exit;
-      end;
-      Fncols := Length(lines[0]) + 2;
+      Fitems := nil;
+      Fncols := 0;
+      Fnrows := 0;
 
-      SetLength(Fitems, Fncols * (lines.Count + 2));
+      bufbeg := 0;
+      bufend := 0;
+
+      pos := input.Position;
+
+      while true do begin
+         eol := bufbeg;
+         while true do begin
+            while (eol < bufend) and (buf[eol] <> LineEnding) do Inc(eol);
+            if eol < bufend then break; // found end of line
+
+            // try to fill buffer
+            if bufbeg > 0 then begin
+               // remove old bytes at the beginning of the buffer
+               move(buf[bufbeg], buf[0], bufend - bufbeg);
+               Dec(bufend, bufbeg);
+               Dec(eol, bufbeg);
+               bufbeg := 0;
+            end;
+            // buffer full ⇒ line too long
+            if bufend = Length(buf) then raise Exception.CreateFmt('Line too long (max %d allowed)', [Length(buf)]);
+            nread := input.Read(buf[bufend], Length(buf) - bufend);
+            if nread = 0 then break; // end of file reached, this is the last line
+            bufend += nread;
+         end;
+
+         SetString(line, @buf[bufbeg], eol - bufbeg);
+         if eol < bufend then
+            Inc(pos, eol + 1 - bufbeg)
+         else
+            Inc(pos, eol - bufbeg);
+
+         bufbeg := eol + 1;
+
+         if line = '' then begin
+            input.Position := pos;
+            break; // stop at first empty line (or EOF)
+         end;
+         if rws = nil then begin
+            // first line
+            Fncols := Length(line) + 2; // number of columns including boundary
+            rws := TStringList.Create;
+            rws.Capacity := Fncols + 2; // rough estimate
+         end else
+            if Length(line) + 2 <> Fncols then
+               raise EReadError.CreateFmt('Row %d of grid has invalid length (got: %d, expected: %d)',
+                                          [rws.Count + 1, Length(line), Fncols - 2]);
+         rws.Add(line);
+      end;
+
+      // copy lines to array
+      SetLength(Fitems, Fncols * (rws.Count + 2));
+
       for i := 0 to Fncols - 1 do Fitems[i] := Fboundary;
       Inc(Fnrows);
 
       j := Fncols;
-      for line in lines do begin
-         if Length(line) = 0 then break;
-
-         if Length(line) + 2 <> Fncols then
-            raise EReadError.CreateFmt('Row %d of grid has invalid length (got: %d, expected: %d)',
-                                       [Fnrows, Length(line), Fncols - 2]);
-
+      for line in rws do begin
          Fitems[j] := Fboundary;
          move(line[1], Fitems[j + 1], (Fncols - 2));
          Fitems[j + Fncols - 1] := Fboundary;
@@ -394,7 +439,7 @@ begin
          Fncols -= 2;
       end;
    finally
-      lines.Free;
+      rws.Free;
    end;
 end;
 

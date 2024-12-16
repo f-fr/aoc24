@@ -84,6 +84,7 @@ type
       function TryMin(out item: TItem): Boolean; inline;
       function PopMin: TItem;
       function TryPopMin(out item: TItem): Boolean;
+      function TryPopMin(out data: T; out value: Val): Boolean;
       function IsEmpty: Boolean; inline;
 
       property Size: Cardinal read Fsize;
@@ -349,6 +350,17 @@ begin
    Felems[lastidx].pos := i;
    Felems[minidx].pos := Ffree;
    Ffree := minidx;
+end;
+
+function TGHeap.TryPopMin(out data: T; out value: Val): Boolean;
+var
+   itm: TItem;
+begin
+   result := TryPopMin(itm);
+   if result then begin
+      data := itm.data;
+      value := itm.value;
+   end;
 end;
 
 function TGHeap.PopMin: TItem;

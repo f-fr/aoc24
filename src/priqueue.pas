@@ -25,6 +25,8 @@ type
       constructor Create;
       destructor Destroy; override;
 
+      procedure Clear;
+
       procedure Push(const data: T; value: Val);
 
       function Min: TItem; inline;
@@ -105,6 +107,11 @@ end;
 class function TGPriQueue.Max(a, b: Cardinal): Cardinal;
 begin
    if a > b then result := a else result := b;
+end;
+
+procedure TGPriQueue.Clear;
+begin
+   Fsize := 0;
 end;
 
 procedure TGPriQueue.Push(const data: T; value: Val);

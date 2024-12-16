@@ -33,6 +33,7 @@ type
       function TryMin(out item: TItem): Boolean; inline;
       function PopMin: TItem;
       function TryPopMin(out item: TItem): Boolean;
+      function TryPopMin(out data: T; out value: Val): Boolean;
       function IsEmpty: Boolean; inline;
 
       property Size: Cardinal read Fsize;
@@ -187,6 +188,17 @@ begin
       i := inxt;
    end;
    Fheap[i] := Fheap[Fsize];
+end;
+
+function TGPriQueue.TryPopMin(out data: T; out value: Val): Boolean;
+var
+   itm: TItem;
+begin
+   result := TryPopMin(itm);
+   if result then begin
+      data := itm.data;
+      value := itm.value;
+   end;
 end;
 
 function TGPriQueue.PopMin: TItem;

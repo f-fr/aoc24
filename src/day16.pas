@@ -24,7 +24,7 @@ interface
 
 implementation
 
-uses AOC, AOC.Generic, Classes, PriQueue, SysUtils, Math;
+uses AOC, AOC.Generic, Classes, PriQueue, SysUtils, Math, generics.collections;
 
 function Run(grid: TGrid): TResult;
 type
@@ -32,8 +32,14 @@ type
       pos: TPos;
       dir: TDir;
    end;
+   TIncomingDist = record
+      pos: TPos;
+      dir: TDir;
+      d: Integer;
+   end;
 
    TPriQueue = specialize TGPriQueue<TIncoming, Integer>;
+   TSimpleQueue = specialize TQueue<TIncomingDist>;
    TIntGrid = specialize TGenGrid<Integer>;
 var
    pos: TPos;
@@ -41,8 +47,11 @@ var
    dir: TDir;
    i, j, d, c: Integer;
    q: TPriQueue = nil;
+   simple_q: TSimpleQueue = nil;
    dists: array[1..2, TDir] of TIntGrid;
+   degs: TIntGrid = nil;
    incoming: TIncoming;
+   incomingd: TIncomingDist;
 begin
    result[1] := 0;
    result[2] := 0;
@@ -52,10 +61,20 @@ begin
 
    try
       q := TPriQueue.Create;
+      simple_q := TSimpleQueue.Create;
 
       for dir in TDir do begin
          dists[1, dir] := TIntGrid.Create(grid.N, grid.M, High(Integer));
          dists[2, dir] := TIntGrid.Create(grid.N, grid.M, High(Integer));
+      end;
+
+      degs := TIntGrid.Create(grid.N, grid.M, 0);
+      for i := 1 to grid.N-2 do begin
+         for j := 1 to grid.M-2 do begin
+            if grid[i, j] = '.' then
+               for dir in TDir do
+                  degs[TPos.Create(i, j) + dir] := degs[TPos.Create(i, j) + dir] + 1;
+         end
       end;
 
       for j := 1 to 2 do begin
@@ -64,9 +83,17 @@ begin
          q.Push(incoming, 0);
          dists[j][Left].At[st[j]] := 0;
 
-         while q.TryPopMin(incoming, d) do begin
-            pos := incoming.pos;
-            dir := incoming.dir;
+         while true do begin
+            if simple_q.Count > 0 then begin
+               incomingd := simple_q.Extract;
+               pos := incomingd.pos;
+               dir := incomingd.dir;
+               d := incomingd.d;
+            end else if q.TryPopMin(incoming, d) then begin
+               pos := incoming.pos;
+               dir := incoming.dir;
+            end else
+               break;
 
             for i := 1 to 4 do begin
                incoming.pos := pos;
@@ -87,7 +114,13 @@ begin
                   and (d + c < dists[j][incoming.dir].At[incoming.pos])
                then begin
                   dists[j][incoming.dir].At[incoming.pos] := d + c;
-                  q.Push(incoming, d + c);
+                  if degs[incoming.pos] <= 2 then begin
+                     incomingd.pos := incoming.pos;
+                     incomingd.dir := incoming.dir;
+                     incomingd.d := d + c;
+                     simple_q.Enqueue(incomingd);
+                  end else
+                     q.Push(incoming, d + c);
                end;
 
                dir := dir.Clockwise;
@@ -98,7 +131,8 @@ begin
       result[1] := dists[1][Up].At[st[2]];
       for dir in TDir do result[1] := Min(result[1], dists[1][dir].At[st[2]]);
       for i := 0 to grid.N-1 do
-         for j := 0 to grid.M-1 do
+         for j := 0 to grid.M-1 do begin
+            if grid[i, j] = '#' then continue;
             for dir in TDir do begin
                if dists[1][dir][i,j] > result[1] then continue;
                if dists[2][dir][i,j] > result[1] then continue;
@@ -109,8 +143,11 @@ begin
                   end;
                end;
             end;
+         end;
    finally
       q.Free;
+      simple_q.Free;
+      degs.Free;
       for dir in TDir do dists[1, dir].Free;
       for dir in TDir do dists[2, dir].Free;
    end

@@ -214,6 +214,9 @@ var
    iscores, jscores: array [0..102] of Integer;
    iscore, jscore, best_i, best_j, best_iscore, best_jscore: Integer;
 
+   // only needed for entropy approach below
+   // ientr, jentr, best_ientr, best_jentr: Double;
+
    i, j, n, m: Integer;
 begin
    result[1] := 0;
@@ -245,6 +248,8 @@ begin
       best_j := 0;
       best_iscore := 0;
       best_jscore := 0;
+      // best_ientr := 1;
+      // best_jentr := 1;
 
       for i := 1 to Max(100, Max(m, n)) do begin
          for j := 0 to n-1 do iscores[j] := 0;
@@ -273,6 +278,23 @@ begin
             best_j := i;
             best_jscore := jscore;
          end;
+
+         // the same idea but using entropy instead of quadratic scores
+
+         // ientr := 0;
+         // jentr := 0;
+         // for j := 0 to n-1 do if iscores[j] <> 0 then ientr -= iscores[j] / ps.Count * Log2(iscores[j] / ps.Count);
+         // for j := 0 to m-1 do if jscores[j] <> 0 then jentr -= jscores[j] / ps.Count * Log2(jscores[j] / ps.Count);
+
+         // if ientr < best_ientr then begin
+         //    best_i := i;
+         //    best_ientr := ientr;
+         // end;
+
+         // if jentr < best_jentr then begin
+         //    best_j := i;
+         //    best_jentr := jentr;
+         // end;
 
          if i = 100 then begin
             for p in ps do

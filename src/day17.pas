@@ -51,40 +51,58 @@ var
       result := val;
    end;
 
-   function SolvePart2(nums: array of TNum): TInts;
+   function RunProg(TargetIdx : Integer = -1) : TInts;
+   var
+      ip : Integer = 0;
+      value: TNum;
+      initRegA: Int64;
+   begin
+      initRegA := regA;
+      result := nil;
+      while ip < Length(prg) do begin
+         case prg[ip] of
+            0: regA := regA shr combo(prg[ip + 1]);
+            1: regB := regB xor lit(prg[ip + 1]);
+            2: regB := combo(prg[ip + 1]) mod 8;
+            3: if TargetIdx >= 0 then 
+                  break // part2
+               else if regA <> 0 then begin
+                  ip := prg[ip + 1];
+                  continue;
+               end;
+            4: regB := regB xor regC;
+            5: begin
+                  value := combo(prg[ip + 1]) mod 8;
+                  if TargetIdx < 0 then
+                     Insert(value, result, Length(result))
+                  else if value = prg[TargetIdx] then
+                     Insert(initRegA, result, Length(result));
+               end;
+            6: regB := regA shr combo(prg[ip + 1]);
+            7: regC := regA shr combo(prg[ip + 1]);
+         end;
+         Inc(ip, 2);
+      end;
+   end;
+
+   function Solve2(idx : Integer = 0) : TInts;
    var
       rs: TInts;
       r: Int64;
-      i, ip: Integer;
+      i: Integer;
    begin
-      if Length(nums) > 1 then
-         rs := SolvePart2(nums[Low(nums) + 1 .. High(nums)])
+      if idx + 1 < Length(prg) then
+         rs := Solve2(idx + 1)
       else
          rs := TInts.Create(0);
 
       result := nil;
       for r in rs do begin
          for i := 0 to 7 do begin
-            ip := 0;
             regA := (r shl 3) or i;
             regB := 0;
             regC := 0;
-            while ip < Length(prg) do begin
-               case prg[ip] of
-                  0: regA := regA shr combo(prg[ip + 1]);
-                  1: regB := regB xor lit(prg[ip + 1]);
-                  2: regB := combo(prg[ip + 1]) mod 8;
-                  3: break;
-                  4: regB := regB xor regC;
-                  5: if (regB mod 8) = nums[Low(nums)] then begin
-                        Insert((r shl 3) or i, result, Length(result));
-                     end;
-                  6: regB := regA shr combo(prg[ip + 1]);
-                  7: regC := regA shr combo(prg[ip + 1]);
-               else raise Exception.CreateFmt('Invalid opcode: %d', [prg[ip]]);
-               end;
-               Inc(ip, 2);
-            end;
+            Insert(RunProg(idx), result, Length(result));
          end;
       end;
    end;
@@ -93,57 +111,21 @@ var
    toks: TStringArray;
    i: Integer;
 
-   ip: Integer;
-   outputs: TStringList;
-   part1_only: Boolean;
-
    res: TInts = nil;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    regA := input[0].SubString(11).ToInt64;
    regB := input[1].SubString(11).ToInt64;
    regC := input[2].SubString(11).ToInt64;
-
-   part1_only := regA = 729; // ugly
 
    toks := input[4].Split([':', ',', ' '], TStringSplitOptions.ExcludeEmpty);
    SetLength(prg, Length(toks) - 1);
    for i := 1 to High(toks) do prg[i - 1] := toks[i].toInteger;
 
-   try
-      outputs := TStringList.Create;
-      outputs.LineBreak := ',';
-      outputs.SkipLastLineBreak := True;
-      ip := 0;
-      while ip < Length(prg) do begin
-         case prg[ip] of
-            0: regA := regA shr combo(prg[ip + 1]);
-            1: regB := regB xor lit(prg[ip + 1]);
-            2: regB := combo(prg[ip + 1]) mod 8;
-            3: if regA <> 0 then begin
-                  ip := lit(prg[ip + 1]);
-                  continue;
-               end;
-            4: regB := regB xor regC;
-            5: outputs.Add(IntToStr(combo(prg[ip + 1]) mod 8));
-            6: regB := regA shr combo(prg[ip + 1]);
-            7: regC := regA shr combo(prg[ip + 1]);
-         else raise Exception.CreateFmt('Invalid opcode: %d', [prg[ip]]);
-         end;
-         Inc(ip, 2);
-      end;
-      result[1] := outputs.Text;
-
-      // stop in test_part1 ... ugly but I'm lazy
-      if part1_only then exit;
-
-      res := SolvePart2(prg);
-      result[2] := res[0];
-   finally
-      outputs.Free;
-   end
+   res := RunProg;
+   SetLength(toks, Length(res));
+   for i := 0 to High(res) do toks[i] := res[i].ToString;
+   result[1] := String.Join(',', toks);
+   result[2] := Solve2[0];
 end;
 
 initialization

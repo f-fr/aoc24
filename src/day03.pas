@@ -34,10 +34,9 @@ var
    data: String;
    x: Integer;
    doit: Boolean = True;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    SetLength(data, input.Size);
    input.ReadBuffer(data[1], input.Size);
    if re_mul.Exec(data) then
@@ -48,10 +47,12 @@ begin
             doit := False
          else begin
             x := StrToInt(re_mul.Match[1]) * StrToInt(re_mul.Match[2]);
-            result[1] += x;
-            if doit then result[2] += x;
+            part1 += x;
+            if doit then part2 += x;
          end
       until not re_mul.ExecNext;
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 function Run2(input: TStream): TResult;
@@ -59,10 +60,9 @@ var
    data: String;
    i, j, x: Integer;
    doit: Boolean = True;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    SetLength(data, input.Size);
    input.ReadBuffer(data[1], input.Size);
    i := 1;
@@ -86,15 +86,18 @@ begin
             continue;
          end;
          x *= StrToInt(data.SubString(i - 1, j - i));
-         result[1] += x;
-         if doit then result[2] += x;
+         part1 += x;
+         if doit then part2 += x;
       end else if strlcomp(@data[j], 'do()', 4) = 0 then
          doit := True
       else if strlcomp(@data[j], 'don''t()', 7) = 0 then
          doit := False;
 
       i := j + 1;
-   end
+   end;
+
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 initialization

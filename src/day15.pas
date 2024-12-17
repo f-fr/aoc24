@@ -42,10 +42,10 @@ var
    qput, qget: Integer;
 
    i, j, n: Integer;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Integer = 0;
+   part2: Integer = 0;
+begin
    try
       grid := TGrid.ReadFromStream(input);
       pos := grid.Find('@');
@@ -96,7 +96,7 @@ begin
 
       for i := 1 to grid.N-2 do begin
          for j := 1 to grid.M-2 do begin
-            if grid[i,j] = 'O' then result[1] += 100 * i + j;
+            if grid[i,j] = 'O' then part1 += 100 * i + j;
          end
       end;
 
@@ -178,9 +178,12 @@ begin
 
       for i := 1 to grid2.N-2 do begin
          for j := 1 to grid2.M-2 do begin
-            if grid2[i,j] = '[' then result[2] += 100 * i + j;
+            if grid2[i,j] = '[' then part2 += 100 * i + j;
          end
       end;
+
+      result[1] := part1;
+      result[2] := part2;
    finally
       grid.Free;
       grid2.Free;

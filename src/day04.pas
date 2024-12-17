@@ -30,10 +30,9 @@ function Run(grid: TGrid): TResult;
 var
    i,j: Integer;
    dx, dy: Integer;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    grid.Boundary := '.';
 
    for i := 1 to grid.N-2 do begin
@@ -44,7 +43,7 @@ begin
                      (grid[i+dx, j+dy] = 'M') and
                      (grid[i+2*dx, j+2*dy] = 'A') and
                      (grid[i+3*dx, j+3*dy] = 'S')
-               then Inc(result[1]);
+               then part1 += 1;
             end
          end;
 
@@ -53,19 +52,20 @@ begin
                 ((grid[i-1, j-1] = 'S') and (grid[i+1, j+1] = 'M'))) and
                (((grid[i-1, j+1] = 'M') and (grid[i+1, j-1] = 'S')) or
                 ((grid[i-1, j+1] = 'S') and (grid[i+1, j-1] = 'M')))
-         then Inc(result[2]);
+         then part2 += 1;
       end
-   end
+   end;
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 function Run2(grid: TStrings): TResult;
 var
    i,j: Integer;
    dx, dy: Integer;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    for i := 0 to grid.Count - 1 do grid[i] := '.' + grid[i] + '.';
    grid.Append(StringOfChar('.', grid[0].Length));
    grid.Insert(0, grid[grid.Count - 1]);
@@ -78,7 +78,7 @@ begin
                      (grid[i+dx][j+dy] = 'M') and
                      (grid[i+2*dx][j+2*dy] = 'A') and
                      (grid[i+3*dx][j+3*dy] = 'S')
-               then Inc(result[1]);
+               then part1 += 1;
             end
          end;
 
@@ -87,9 +87,11 @@ begin
                 ((grid[i-1][j-1] = 'S') and (grid[i+1][j+1] = 'M'))) and
                (((grid[i-1][j+1] = 'M') and (grid[i+1][j-1] = 'S')) or
                 ((grid[i-1][j+1] = 'S') and (grid[i+1][j-1] = 'M')))
-         then Inc(result[2]);
+         then part2 += 1;
       end
-   end
+   end;
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 initialization

@@ -43,10 +43,10 @@ var
    i, j, s, t: Integer;
    dx, dy: Integer;
    p: TPos;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Integer = 0;
+   part2: Integer = 0;
+begin
    try
       antennas := TAntennas.Create;
       pnts := TFlags.Create(grid.N, grid.M, False);
@@ -75,20 +75,22 @@ begin
                p.j := antennas[j].pos.j + dy;
                if grid.IsValid(p) and not pnts.At[p] then begin
                   pnts.At[p] := True;
-                  Inc(result[1]);
+                  part1 += 1;
                end;
 
                p := antennas[j].pos;
                while grid.IsValid(p) do begin
                   if not pnts2.At[p] then begin
                      pnts2.At[p] := True;
-                     Inc(result[2]);
+                     part2 += 1;
                   end;
                   p.i += dx;
                   p.j += dy;
                end
             end
-      end
+      end;
+      result[1] := part1;
+      result[2] := part2;
    finally
       antennas.Free;
       pnts.Free;

@@ -48,7 +48,7 @@ begin
       ms.Sort;
       result[1] := 0;
       for i := 0 to ns.Count - 1 do begin
-         result[1] += Abs(ns[i] - ms[i]);
+         result[1] := result[1] + Abs(ns[i] - ms[i]);
       end;
 
       result[2] := 0;
@@ -63,7 +63,7 @@ begin
 
          while (j < ms.Count) and (ms[j] < ns[i]) do Inc(j);
          while (j < ms.Count) and (ms[j] = ns[i]) do begin
-            result[2] += k;
+            result[2] := result[2] + k;
             Inc(j);
          end;
 
@@ -114,7 +114,7 @@ begin
       ns.Sort;
       ms.Sort;
       result[1] := 0;
-      for i := 0 to ns.Count - 1 do result[1] += Abs(ns[i] - ms[i]);
+      for i := 0 to ns.Count - 1 do result[1] := result[1] + Abs(ns[i] - ms[i]);
 
       // use the "tally" function, which basically just counts
       nscnt := Tally(ns);
@@ -122,7 +122,7 @@ begin
       result[2] := 0;
       for pair in nscnt do
          if mscnt.TryGetValue(pair.Key, j) then
-            result[2] += pair.Key * pair.Value * j;
+            result[2] := result[2] + pair.Key * pair.Value * j;
    finally
       ns.Free;
       ms.Free;
@@ -152,7 +152,7 @@ begin
    TIntArrayHelper.Sort(ms);
 
    result[1] := 0;
-   for i := 0 to High(ns) do result[1] += Abs(ns[i] - ms[i]);
+   for i := 0 to High(ns) do result[1] := result[1] + Abs(ns[i] - ms[i]);
 
    result[2] := 0;
    i := 0;
@@ -166,7 +166,7 @@ begin
 
       while (j < Length(ms)) and (ms[j] < ns[i]) do Inc(j);
       while (j < Length(ms)) and (ms[j] = ns[i]) do begin
-         result[2] += k;
+         result[2] := result[2] + k;
          Inc(j);
       end;
 
@@ -180,6 +180,8 @@ var
    row: TCSVReader.TRow;
    ns, ms: TIntList;
    i, j, k: Integer;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
    try
       csv.Delimiter := ' ';
@@ -191,8 +193,7 @@ begin
       end;
       ns.Sort;
       ms.Sort;
-      result[1] := 0;
-      for i := 0 to ns.Count - 1 do result[1] += Abs(ns[i] - ms[i]);
+      for i := 0 to ns.Count - 1 do part1 += Abs(ns[i] - ms[i]);
 
       result[2] := 0;
       i := 0;
@@ -206,12 +207,15 @@ begin
 
          while (j < ms.Count) and (ms[j] < ns[i]) do Inc(j);
          while (j < ms.Count) and (ms[j] = ns[i]) do begin
-            result[2] += k;
+            part2 += k;
             Inc(j);
          end;
 
          Inc(i)
       end;
+
+      result[1] := part1;
+      result[2] := part2;
    finally
       ns.Free;
       ms.Free;

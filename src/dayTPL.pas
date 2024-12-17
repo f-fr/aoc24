@@ -27,9 +27,12 @@ implementation
 uses AOC, Classes;
 
 function Run(input: TStream): TResult;
+var
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 initialization

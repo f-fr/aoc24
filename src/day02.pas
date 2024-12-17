@@ -31,11 +31,11 @@ var
    row: TCSVReader.TRow;
    i, d, mindiff, maxdiff: Integer;
    k: Integer;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
    input.Delimiter := ' ';
 
-   result[1] := 0;
-   result[2] := 0;
    for row in input do begin
       for k := -1 to row.Count - 1 do begin
          mindiff := High(Integer);
@@ -56,12 +56,15 @@ begin
          if ((1 <= mindiff) and (mindiff <= maxdiff) and (maxdiff <= 3)) or
                ((-3 <= mindiff) and (mindiff <= maxdiff) and (maxdiff <= -1))
          then begin
-            if k = -1 then Inc(result[1]);
-            Inc(result[2]);
+            if k = -1 then part1 += 1;
+            part2 += 1;
             break;
          end;
       end;
    end;
+
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 // This version runs in O(n). In each row we basically search for a path
@@ -75,20 +78,20 @@ var
    row: TCSVReader.TRow;
    i: Integer;
    dir, d, dskip: Integer;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
    input.Delimiter := ' ';
 
-   result[1] := 0;
-   result[2] := 0;
    for row in input do begin
       // trivial cases
       if row.Count <= 1 then begin
-         Inc(result[1]);
-         Inc(result[2]);
+         part1 += 1;
+         part2 += 1;
       end else if row.Count = 2 then begin
          d := Abs(row.Integers[1] - row.Integers[0]);
-         if (1 <= d) and (d <= 3) then Inc(result[1]);
-         Inc(result[2]);
+         if (1 <= d) and (d <= 3) then part1 += 1;
+         part2 += 1;
       end else begin
          // try both directions (at least one should stop after at most 2 steps or so)
          for dir in TIntArray.Create(-1, 1) do begin
@@ -114,16 +117,19 @@ begin
                if (d = 0) and (dskip = 0) then break;
             end;
             if d <> 0 then begin
-               Inc(result[1]);
-               Inc(result[2]);
+               part1 += 1;
+               part2 += 1;
                break;
             end else if dskip <> 0 then begin
-               Inc(result[2]);
+               part2 += 1;
                break;
             end
          end;
       end;
    end;
+
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 // The same idea as version 2 but we use "outgoing" edges instead of "incoming".
@@ -133,20 +139,20 @@ var
    i: Integer;
    dir, d, dskip: Integer;
    a, a1, a2: Integer;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
    input.Delimiter := ' ';
 
-   result[1] := 0;
-   result[2] := 0;
    for row in input do begin
       // trivial cases
       if row.Count <= 1 then begin
-         Inc(result[1]);
-         Inc(result[2]);
+         part1 += 1;
+         part2 += 1;
       end else if row.Count = 2 then begin
          d := Abs(row.Integers[1] - row.Integers[0]);
-         if (1 <= d) and (d <= 3) then Inc(result[1]);
-         Inc(result[2]);
+         if (1 <= d) and (d <= 3) then part1 += 1;
+         part2 += 1;
       end else begin
          // try both directions (at least one should stop after at most 2 steps or so)
          for dir in TIntArray.Create(-1, 1) do begin
@@ -174,11 +180,14 @@ begin
                end;
                if (d = 0) and (dskip = 0) then break;
             end;
-            if d <> 0 then Inc(result[1]);
-            if dskip <> 0 then Inc(result[2]);
+            if d <> 0 then part1 += 1;
+            if dskip <> 0 then part2 += 1;
          end;
       end;
    end;
+
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 function Run4(input: TCSVReader): TResult;
@@ -186,11 +195,11 @@ var
    row: TCSVReader.TRow;
    a: TIntArray;
    i, k: Integer;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
    input.Delimiter := ' ';
 
-   result[1] := 0;
-   result[2] := 0;
    for row in input do begin
       for k := -1 to row.Count - 1 do begin
          a := row.toIntegerArray;
@@ -198,12 +207,15 @@ begin
          for i := 1 to High(a) do a[i-1] := a[i] - a[i-1];
          Delete(a, High(a), 1);
          if ((1 <= MinValue(a)) and (MaxValue(a) <= 3)) or ((-3 <= MinValue(a)) and (MaxValue(a) <= -1)) then begin
-            if k = -1 then Inc(result[1]);
-            Inc(result[2]);
+            if k = -1 then part1 += 1;
+            part2 += 1;
             break;
          end;
       end;
    end;
+
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 initialization

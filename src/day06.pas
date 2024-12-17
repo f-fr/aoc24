@@ -34,10 +34,9 @@ var
    sd, d: TDir;
    i, j: Integer;
    path: TPosList = nil;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    grid.Boundary := ' ';
    if not grid.TryFindOf(['<', '^', '>', 'v'], s) then raise Exception.Create('Starting position not found');
 
@@ -53,7 +52,7 @@ begin
          if grid.At[p] <> 'X' then begin
             grid.At[p] := 'X';
             if p <> s then path.Add(p);
-            Inc(result[1]);
+            part1 += 1;
          end;
          q := p + d;
          case grid.At[q] of
@@ -79,7 +78,7 @@ begin
 
          while grid.At[p] <> ' ' do begin
             if (Ord(grid.At[p]) and (1 shl Ord(d))) <> 0 then begin
-               Inc(result[2]);
+               part2 += 1;
                break;
             end;
             grid.At[p] := Chr((Ord(grid.At[p]) or (1 shl Ord(d))));
@@ -96,6 +95,8 @@ begin
 
          grid.At[pnew] := Chr(0);
       end;
+      result[1] := part1;
+      result[2] := part2;
    finally
       path.Free;
    end
@@ -112,10 +113,9 @@ var
    path: TPosList = nil;
    visited: TPosList = nil;
    gup, gright, gdown, gleft: TDistGrid;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    try
       gup := TDistGrid.Create(grid.N, grid.M);
       gright := TDistGrid.Create(grid.N, grid.M);
@@ -162,7 +162,7 @@ begin
          if grid.At[p] <> 'X' then begin
             grid.At[p] := 'X';
             if p <> s then path.Add(p);
-            Inc(result[1]);
+            part1 += 1;
          end;
          q := p + d;
          case grid.At[q] of
@@ -191,7 +191,7 @@ begin
          // the same as above but doing "far jumps"
          while grid.At[p] <> ' ' do begin
             if ((Ord(grid.At[p])) and (1 shl Ord(d))) <> 0 then begin
-               Inc(result[2]);
+               part2 += 1;
                break;
             end;
             grid.At[p] := Chr(((Ord(grid.At[p])) or (1 shl Ord(d))));
@@ -217,6 +217,8 @@ begin
             d := d.Clockwise;
          end;
       end;
+      result[1] := part1;
+      result[2] := part2;
    finally
       gup.Free;
       gright.Free;
@@ -243,10 +245,9 @@ var
    visited: TVisitedList = nil;
    v: TVisited;
    gup, gright, gdown, gleft, flags: TDistGrid;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    try
       gup := TDistGrid.Create(grid.N, grid.M);
       gright := TDistGrid.Create(grid.N, grid.M);
@@ -294,7 +295,7 @@ begin
       while grid.At[p] <> ' ' do begin
          if grid.At[p] <> 'X' then begin
             grid.At[p] := 'X';
-            Inc(result[1]);
+            part1 += 1;
          end;
          q := p + d;
          case grid.At[q] of
@@ -335,7 +336,7 @@ begin
          // the same as above but doing "far jumps"
          while flags.At[p] <> 32 do begin
             if (flags.At[p] and (1 shl Ord(d))) <> 0 then begin
-               Inc(result[2]);
+               part2 += 1;
                break;
             end;
             v.pos := p;
@@ -369,6 +370,9 @@ begin
             end;
          end;
       end;
+
+      result[1] := part1;
+      result[2] := part2;
    finally
       gup.Free;
       gright.Free;

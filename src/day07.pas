@@ -55,10 +55,9 @@ var
    xs: String;
    x: Int64;
    i: Integer;
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    input.Delimiter := ' ';
    for row in input.Rows do begin
       SetLength(nums, Max(Length(nums), row.Count-1));
@@ -66,10 +65,12 @@ begin
       x := xs.SubString(0, xs.Length-1).toInt64;
       for i := 1 to row.Count-1 do nums[i-1] := row.Integers[i];
       if Check(x, nums, row.Count - 1) then begin
-         result[1] += x;
-         result[2] += x;
-      end else if Check(x, nums, row.Count - 1, True) then result[2] += x;
+         part1 += x;
+         part2 += x;
+      end else if Check(x, nums, row.Count - 1, True) then part2 += x;
    end;
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 initialization

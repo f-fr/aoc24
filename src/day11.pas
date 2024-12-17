@@ -66,10 +66,10 @@ var
    p: TIntDict.TDictionaryPair;
    x, y, n: Int64;
    i, k: Integer;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Int64 = 0;
+   part2: Int64 = 0;
+begin
    try
       cnts := TIntDict.Create;
       cnts2 := TIntDict.Create;
@@ -103,10 +103,12 @@ begin
          cnts := cnts2;
          cnts2 := tmp;
 
-         if k = 25 then for p in cnts do result[1] += p.Value;
+         if k = 25 then for p in cnts do part1 += p.Value;
       end;
-      for p in cnts do result[2] += p.Value;
+      for p in cnts do part2 += p.Value;
 
+      result[1] := part1;
+      result[2] := part2;
    finally
       cnts.Free;
       cnts2.Free;
@@ -174,10 +176,10 @@ var
    p: TIntDict.TDictionaryPair;
    x, y, n: Int64;
    i, k: Integer;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Int64 = 0;
+   part2: Int64 = 0;
+begin
    try
       cnts := TIntDict.Create;
       cnts2 := TIntDict.Create;
@@ -212,10 +214,12 @@ begin
          cnts := cnts2;
          cnts2 := tmp;
 
-         if k = 25 then for p in cnts do result[1] += p.Value;
+         if k = 25 then for p in cnts do part1 += p.Value;
       end;
-      for p in cnts do result[2] += p.Value;
+      for p in cnts do part2 += p.Value;
 
+      result[1] := part1;
+      result[2] := part2;
    finally
       cnts.Free;
       cnts2.Free;

@@ -41,10 +41,10 @@ var
 
    gaps: array[1..9] of TPriQueue;
    best: TPriQueue.TItem;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Integer = 0;
+   part2: Integer = 0;
+begin
    input.ReadLine(line);
    SetLength(nums, Length(line));
    for i := 1 to Length(line) do
@@ -56,7 +56,7 @@ begin
    y := nums[j];
    while i < j do begin
       // add current left file block
-      result[1] += Value(i div 2, pos, nums[i]);
+      part1 += Value(i div 2, pos, nums[i]);
       Inc(pos, nums[i]);
 
       // go to space
@@ -65,7 +65,7 @@ begin
       while x > 0 do begin
          // copy from right to space
          k := Min(x, y);
-         result[1] += Value(j div 2, pos, k);
+         part1 += Value(j div 2, pos, k);
          pos += k;
          x -= k;
          y -= k;
@@ -79,7 +79,7 @@ begin
       Inc(i);
    end;
    // remaining blocks at right end
-   result[1] += Value(j div 2, pos, y);
+   part1 += Value(j div 2, pos, y);
 
    try
       for i := Low(gaps) to High(gaps) do gaps[i] := TPriQueue.Create;
@@ -108,18 +108,21 @@ begin
          end;
 
          if best.value = pos then
-            result[2] += Value(j div 2, pos, nums[j]) // no gap found
+            part2 += Value(j div 2, pos, nums[j]) // no gap found
          else begin
             // move to gap
             gaps[best.data].PopMin;
             // new smaller gap
             if best.data > nums[j] then gaps[best.data - nums[j]].Push(best.data - nums[j], best.value + nums[j]);
-            result[2] += Value(j div 2, best.value, nums[j]);
+            part2 += Value(j div 2, best.value, nums[j]);
          end;
 
          if j > 0 then pos -= nums[j-1];
          Dec(j, 2);
       end;
+
+      result[1] := part1;
+      result[2] := part2;
    finally
       for i := Low(gaps) to High(gaps) do gaps[i].Free;
    end

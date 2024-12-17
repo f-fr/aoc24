@@ -27,8 +27,7 @@ interface
 uses AOC.Generic, generics.collections, Classes, StreamEx, EasyCSV;
 
 type
-
-   TResult = array[1..2] of Int64;
+   TResult = array[1..2] of variant;
 
    TDay = 1..25;
 
@@ -434,7 +433,7 @@ begin
          for i := tblbeg to tblend - 1 do readme.Delete(tblbeg);
 
          // add table header
-         line := '| day | version | %15s | %15s | time (ms)|'.Format(['part1', 'part2']);
+         line := '| day | version | %17s | %15s | time (ms)|'.Format(['part1', 'part2']);
          readme.Insert(tblbeg, '  ' + line);
          for i := 1 to line.Length do
             if line[i] <> '|' then
@@ -463,12 +462,12 @@ begin
                endtime := Now;
                dayTime := MillisecondsBetween(starttime, endtime) / 1000;
                if not updateReadme then begin
-                  writeln(Format('day: %2d %s  part1: %15d  part2: %15d   time:%.3g',
+                  writeln(Format('day: %2d %s  part1: %17s  part2: %15s   time:%.3g',
                                  [d,
                                   IfThen(ver > 1, Format('v%d', [ver]), '  '),
                                   res[1], res[2], dayTime]));
                end else begin
-                  readme.Insert(tblend, '  | %3d | %7d | %15d | %15d | %8.3g |'.Format(
+                  readme.Insert(tblend, '  | %3d | %7d | %17s | %15s | %8.3g |'.Format(
                                    [d, ver, res[1], res[2], dayTime]));
                   tblend += 1;
                end;

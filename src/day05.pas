@@ -53,9 +53,9 @@ var
    i: Integer;
    valid: Boolean;
 
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
    try
       edges := TEdges.Create;
       input.Delimiter := '|';
@@ -81,12 +81,15 @@ begin
             end;
          end;
          if valid then
-            result[1] += nodes[row.Count div 2]
+            part1 += nodes[row.Count div 2]
          else begin
             specialize Sort<Integer>(nodes, @CmpByEdges, 0, row.Count);
-            result[2] += nodes[row.Count div 2];
+            part2 += nodes[row.Count div 2];
          end;
       end;
+
+      result[1] := part1;
+      result[2] := part2;
    finally
       edges.Free;
    end
@@ -113,10 +116,9 @@ var
    i: Integer;
    valid: Boolean;
 
+   part1: Integer = 0;
+   part2: Integer = 0;
 begin
-   result[1] := 0;
-   result[2] := 0;
-
    input.Delimiter := '|';
 
    edges := default(TEdges);
@@ -139,12 +141,14 @@ begin
          end;
       end;
       if valid then
-         result[1] += nodes[row.Count div 2]
+         part1 += nodes[row.Count div 2]
       else begin
          specialize Sort<Integer>(nodes, @CmpByEdges, 0, row.Count);
-         result[2] += nodes[row.Count div 2];
+         part2 += nodes[row.Count div 2];
       end;
    end;
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 initialization

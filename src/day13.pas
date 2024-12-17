@@ -54,10 +54,10 @@ function Run(input: TTextReader): TResult;
 var
    toks: array of String;
    a, b, c, x: TVec;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Int64 = 0;
+   part2: Int64 = 0;
+begin
    while not input.Eof do begin
       toks := input.ReadLine.Split([' ', ':', '+', '=', ','], TStringSplitOptions.ExcludeEmpty);
       a[1] := toks[3].toInteger;
@@ -71,15 +71,18 @@ begin
       c[1] := toks[2].toInteger;
       c[2] := toks[4].toInteger;
 
-      if Solve(a, b, c, x) then result[1] += x[1] * 3 + x[2] * 1;
+      if Solve(a, b, c, x) then part1 += x[1] * 3 + x[2] * 1;
 
       c[1] += 10000000000000;
       c[2] += 10000000000000;
 
-      if Solve(a, b, c, x) then result[2] += x[1] * 3 + x[2] * 1;
+      if Solve(a, b, c, x) then part2 += x[1] * 3 + x[2] * 1;
 
       input.ReadLine; // empty line
    end;
+
+   result[1] := part1;
+   result[2] := part2;
 end;
 
 initialization

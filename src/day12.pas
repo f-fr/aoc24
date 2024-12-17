@@ -38,10 +38,10 @@ var
    c: char;
    pos, nxt: TPos;
    dir: TDir;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Integer = 0;
+   part2: Integer = 0;
+begin
    try
       seen := TBoolGrid.Create(grid.N, grid.M, False);
 
@@ -80,10 +80,13 @@ begin
                end;
             end;
 
-            result[1] += area * perm;
-            result[2] += area * lns;
+            part1 += area * perm;
+            part2 += area * lns;
          end
-      end
+      end;
+
+      result[1] := part1;
+      result[2] := part2;
    finally
       seen.Free;
       q.Free;

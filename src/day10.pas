@@ -38,10 +38,10 @@ var
    pos, nxtpos: TPos;
    dir: TDir;
    cur, nxt: char;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Integer = 0;
+   part2: Integer = 0;
+begin
    try
       grid.Boundary := ' ';
       q := TPosQueue.Create;
@@ -61,8 +61,8 @@ begin
                pos := q.Dequeue;
                cur := grid.At[pos];
                if cur = '9' then begin
-                  Inc(result[1]);
-                  result[2] += cnt.At[pos]
+                  part1 += 1;
+                  part2 += cnt.At[pos]
                end else begin
                   nxt := Succ(cur);
                   for dir in TDir do begin
@@ -80,6 +80,8 @@ begin
             end;
          end
       end;
+      result[1] := part1;
+      result[2] := part2;
    finally
       q.Free;
       seen.Free;

@@ -52,10 +52,10 @@ var
    degs: TIntGrid = nil;
    incoming: TIncoming;
    incomingd: TIncomingDist;
-begin
-   result[1] := 0;
-   result[2] := 0;
 
+   part1: Int64 = 0;
+   part2: Int64 = 0;
+begin
    if not grid.TryFind('S', st[1]) then raise Exception.Create('No start found');
    if not grid.TryFind('E', st[2]) then raise Exception.Create('No end found');
 
@@ -128,22 +128,25 @@ begin
          end;
       end;
 
-      result[1] := dists[1][Up].At[st[2]];
-      for dir in TDir do result[1] := Min(result[1], dists[1][dir].At[st[2]]);
+      part1 := dists[1][Up].At[st[2]];
+      for dir in TDir do part1 := Min(part1, dists[1][dir].At[st[2]]);
       for i := 0 to grid.N-1 do
          for j := 0 to grid.M-1 do begin
             if grid[i, j] = '#' then continue;
             for dir in TDir do begin
-               if dists[1][dir][i,j] > result[1] then continue;
-               if dists[2][dir][i,j] > result[1] then continue;
-               if dists[1][dir][i,j] + dists[2][dir][i,j] = result[1] then begin
+               if dists[1][dir][i,j] > part1 then continue;
+               if dists[2][dir][i,j] > part1 then continue;
+               if dists[1][dir][i,j] + dists[2][dir][i,j] = part1 then begin
                   if grid[i, j] <> 'O' then begin
-                     result[2] += 1;
+                     part2 += 1;
                      grid[i, j] := 'O';
                   end;
                end;
             end;
          end;
+
+      result[1] := part1;
+      result[2] := part2;
    finally
       q.Free;
       simple_q.Free;

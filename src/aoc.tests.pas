@@ -78,6 +78,7 @@ var
 
    i: Integer;
    Expecteds: array of String;
+   ExpectedStr: String;
    Expected: Int64;
    res: TResult;
 begin
@@ -91,13 +92,15 @@ begin
       AssertTrue('First test line must be ''EXPECTED: <number>''', (i >= 0) and ('EXPECTED' = input[0].SubString(0, i).Trim));
 
       if StartsStr('test_part', ExtractFileName(FfilePath)) then begin
-         Expected := StrToInt64(input[0].SubString(i+1));
+         ExpectedStr := input[0].SubString(i + 1).Trim;
       end else begin
          // both parts test
          Expecteds := input[0].SubString(i+1).Split(' ', TStringSplitOptions.ExcludeEmpty);
-         AssertEquals('Exactly two numbers expected in expectation line (EXPECTED: <number1> <number2>)', 2, Length(Expecteds));
-         Expected := StrToInt64(Expecteds[Fpart - 1]);
+         AssertEquals('Exactly two outputs expected in expectation line (EXPECTED: <number1> <number2>)', 2, Length(Expecteds));
+         ExpectedStr := Expecteds[Fpart - 1];
       end;
+
+      if TryStrToInt64(ExpectedStr, Expected) then ExpectedStr := '';
 
       input.Delete(0);
       mem.Clear;
@@ -105,7 +108,10 @@ begin
       mem.Position := 0;
 
       res := Frunner.Run(mem);
-      AssertEquals(Expected, res[part]);
+      if ExpectedStr = '' then
+         AssertEquals(Expected, res[part])
+      else
+         AssertEquals(ExpectedStr, res[part]);
    finally
       mem.Free;
       input.Free;

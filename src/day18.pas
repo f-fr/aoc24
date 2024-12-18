@@ -24,13 +24,13 @@ interface
 
 implementation
 
-uses AOC, AOC.Generic, Classes, StreamEx, SysUtils, generics.collections, priqueue;
+uses AOC, AOC.Generic, Classes, StreamEx, SysUtils, generics.collections;
 
 function Run(input: TTextReader): TResult;
 type
    TPosList = specialize TList<TPos>;
    TIntGrid = specialize TGenGrid<Integer>;
-   TPriQueue = specialize TGPriQueue<TPos, Integer>;
+   TPosQueue = specialize TQueue<TPos>;
 var
    toks: array of String;
    nums: TPosList = nil;
@@ -40,7 +40,7 @@ var
    grid: TIntGrid = nil;
    dist: TIntGrid = nil;
    seen: TIntGrid = nil;
-   q: TPriQueue = nil;
+   q: TPosQueue = nil;
 
    s, t, pos, nxt: TPos;
    dir: TDir;
@@ -75,18 +75,20 @@ begin
       dist := TIntGrid.Create(grid.N, grid.M, High(Integer));
       seen := TIntGrid.Create(grid.N, grid.M, -1);
 
-      q := TPriQueue.Create;
+      q := TPosQueue.Create;
       for i := npart1 to nums.Count do begin
          q.Clear;
-         q.Push(s, 0);
+         q.Enqueue(s);
          dist.At[s] := 0;
          seen.At[s] := i;
-         while q.TryPopMin(pos, d) do begin
+         while q.Count > 0 do begin
+            pos := q.Extract;
             if pos = t then break;
+            d := dist.At[pos];
             for dir in TDir do begin
                nxt := pos + dir;
-               if (grid.At[nxt] > i) and ((seen.At[nxt] < i) or (d + 1 < dist.At[nxt])) then begin
-                  q.Push(nxt, d + 1);
+               if (grid.At[nxt] > i) and (seen.At[nxt] < i) then begin
+                  q.Enqueue(nxt);
                   seen.At[nxt] := i;
                   dist.At[nxt] := d + 1;
                end;

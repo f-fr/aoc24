@@ -42,8 +42,8 @@ var
    gaps: array[1..9] of TPriQueue;
    best: TPriQueue.TItem;
 
-   part1: Integer = 0;
-   part2: Integer = 0;
+   part1: Int64 = 0;
+   part2: Int64 = 0;
 begin
    input.ReadLine(line);
    SetLength(nums, Length(line));

@@ -55,8 +55,8 @@ var
    xs: String;
    x: Int64;
    i: Integer;
-   part1: Integer = 0;
-   part2: Integer = 0;
+   part1: Int64 = 0;
+   part2: Int64 = 0;
 begin
    input.Delimiter := ' ';
    for row in input.Rows do begin

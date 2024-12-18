@@ -48,6 +48,8 @@ type
       class operator+(a: TPos; d: TDir): TPos; inline;
       class operator-(a: TPos; d: TDir): TPos; inline;
 
+      function ToString: String;
+
       property Items[idx: Integer]: Integer read GetItem write SetItem; default;
    end;
 
@@ -277,6 +279,10 @@ begin
    result := a.Step(d, -1);
 end;
 
+function TPos.ToString: String;
+begin
+   result := Format('(%d,%d)', [i, j]);
+end;
 
 { TRow }
 

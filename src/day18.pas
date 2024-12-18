@@ -117,8 +117,111 @@ begin
    end
 end;
 
+function Run2(input: TTextReader): TResult;
+type
+   TPosList = specialize TList<TPos>;
+   TIntGrid = specialize TGenGrid<Integer>;
+   TPosQueue = specialize TQueue<TPos>;
+var
+   toks: array of String;
+   nums: TPosList = nil;
+   is_test: Boolean = true;
+   npart1: Integer;
+
+   grid: TIntGrid = nil;
+   dist: TIntGrid = nil;
+   q: TPosQueue = nil;
+
+   s, t, pos, nxt: TPos;
+   dir: TDir;
+   i, d: Integer;
+begin
+   try
+      nums := TPosList.Create;
+      while not input.EOF do begin
+         toks := input.ReadLine.split(',');
+         nums.Add(TPos.Create(toks[0].toInteger + 1, toks[1].toInteger + 1));
+         // detection of test cases
+         is_test := is_test and (nums[nums.Count-1].i <= 7) and (nums[nums.Count-1].j <= 7);
+      end;
+
+      if is_test then begin
+         grid := TIntGrid.Create(7, 7, High(Integer));
+         npart1 := 12
+      end else begin
+         grid := TIntGrid.Create(71, 71, High(Integer));
+         npart1 := 1024;
+      end;
+
+      dist := TIntGrid.Create(grid.N, grid.M, High(Integer));
+
+      grid.Boundary := 0;
+      dist.Boundary := High(Integer);
+      for i := 0 to nums.Count - 1 do
+         grid.At[nums[i]] := i + 1;
+
+      s := TPos.Create(1, 1);
+      t := TPos.Create(grid.N - 2, grid.M - 2);
+
+      q := TPosQueue.Create;
+      q.Enqueue(s);
+      dist.At[s] := 0;
+      while q.Count > 0 do begin
+         pos := q.Extract;
+         if pos = t then break;
+         d := dist.At[pos];
+         for dir in TDir do begin
+            nxt := pos + dir;
+            if (grid.At[nxt] > npart1) and (d + 1 < dist.At[nxt]) then begin
+               q.Enqueue(nxt);
+               dist.At[nxt] := d + 1;
+            end;
+         end;
+      end;
+      result[1] := dist.At[t];
+
+      // for part2, start a search until we're stuck, then release a (seen) block
+      dist.fill(2);
+      i := nums.Count;
+      q.Clear;
+      q.Enqueue(s);
+      dist.At[s] := 0;
+      while true do begin
+         while q.Count > 0 do begin
+            pos := q.Extract;
+            if pos = t then begin
+               result[2] := (nums[i].i - 1).toString + ',' + (nums[i].j - 1).toString;
+               exit;
+            end;
+            for dir in TDir do begin
+               nxt := pos + dir;
+               if dist.At[nxt] = 2 then begin
+                  if grid.At[nxt] > i then begin
+                     q.Enqueue(nxt);
+                     dist.At[nxt] := 0;
+                  end else
+                     dist.At[nxt] := 1;
+               end;
+            end;
+         end;
+         repeat
+            Dec(i);
+         until (i < 0) or (dist.At[nums[i]] = 1);
+         if i < 0 then break;
+         dist.At[nums[i]] := 0;
+         q.Enqueue(nums[i]);
+      end;
+   finally
+      nums.Free;
+      grid.Free;
+      dist.Free;
+      q.Free;
+   end
+end;
+
 initialization
 
    RegisterDay(18, @Run, 1);
+   RegisterDay(18, @Run2, 2);
 
 end.

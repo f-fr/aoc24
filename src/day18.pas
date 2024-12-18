@@ -45,9 +45,7 @@ var
    s, t, pos, nxt: TPos;
    dir: TDir;
    i, d: Integer;
-
-   part1: Integer = 0;
-   part2: String;
+   a, b, m: Integer;
 begin
    try
       nums := TPosList.Create;
@@ -76,7 +74,16 @@ begin
       seen := TIntGrid.Create(grid.N, grid.M, -1);
 
       q := TPosQueue.Create;
-      for i := npart1 to nums.Count do begin
+      // we use binary search
+      a := 0; // definitely works
+      b := nums.Count; // definitely does not work
+      i := 0; // the generation
+      while a + 1 < b do begin
+         if i = 0 then
+            m := npart1 // for part 1
+         else
+            m := (a + b) div 2;
+
          q.Clear;
          q.Enqueue(s);
          dist.At[s] := 0;
@@ -87,7 +94,7 @@ begin
             d := dist.At[pos];
             for dir in TDir do begin
                nxt := pos + dir;
-               if (grid.At[nxt] > i) and (seen.At[nxt] < i) then begin
+               if (grid.At[nxt] > m) and (seen.At[nxt] < i) then begin
                   q.Enqueue(nxt);
                   seen.At[nxt] := i;
                   dist.At[nxt] := d + 1;
@@ -95,15 +102,12 @@ begin
             end;
          end;
 
-         if i = npart1 then part1 := dist.At[t];
-         if seen.At[t] < i then begin
-            part2 := nums[i - 1].i.toString + ',' + nums[i - 1].j.toString;
-            break;
-         end;
+         if i = 0 then result[1] := dist.At[t];
+         if seen.At[t] = i then a := m else b := m;
+         Inc(i);
       end;
 
-      result[1] := part1;
-      result[2] := part2;
+      result[2] := nums[b - 1].i.toString + ',' + nums[b - 1].j.toString;
    finally
       nums.Free;
       grid.Free;

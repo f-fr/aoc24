@@ -177,6 +177,9 @@ type
       function FindOf(values: array of T): TPos; inline;
       function TryFindOf(values: array of T; out pos: TPos): Boolean;
 
+      // Set all elements (except for the boundary) to `value`.
+      procedure Fill(value : T);
+
       function Rows: TRowEnum;
       function Cols: TColEnum;
 
@@ -556,6 +559,15 @@ function TGenGrid.Cols: TColEnum;
 begin
    result.Fgrid := self;
    result.Findex := 0;
+end;
+
+procedure TGenGrid.Fill(value : T);
+var
+   i, j: Integer;
+begin
+   for i := 0 to N-1 do
+      for j := 0 to M-1 do
+         Items[i, j] := value;
 end;
 
 function TGenGrid.TryFind(value: T; out pos: TPos): Boolean;

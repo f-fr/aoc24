@@ -301,10 +301,20 @@ end;
 function TRow.ToString: String;
 var
    i: Integer;
+   s: TStringList = nil;
+   str: String;
 begin
-   SetLength(result, Flen);
-   for i := 1 to Flen do
-      result[i] := Char(self[i - 1]);
+   try
+      s := TStringList.Create;
+      s.LineBreak := '';
+      for i := 1 to Flen do begin
+         writestr(str, self[i - 1]);
+         s.Add(str);
+      end;
+      result := s.Text;
+   finally
+      s.Free;
+   end
 end;
 
 { TCol }

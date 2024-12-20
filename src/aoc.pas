@@ -40,6 +40,8 @@ type
 
    TIntArrayHelper = specialize TArrayHelper<Integer>;
 
+   TIntGrid = specialize TGenGrid<Integer>;
+
    TNamesBag = class
    private
       type

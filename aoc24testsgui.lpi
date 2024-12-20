@@ -158,6 +158,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Day19"/>
       </Unit>
+      <Unit>
+        <Filename Value="src/day20.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Day20"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

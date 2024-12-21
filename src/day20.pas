@@ -76,6 +76,9 @@ begin
       if grid.N <= 16 then begin // test case
          diff1 := 1;
          diff2 := 50;
+      end else if grid.N <= 50 then begin
+         diff1 := 1;
+         diff2 := 30;
       end;
 
       for i := 1 to grid.N - 2 do begin

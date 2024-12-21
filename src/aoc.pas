@@ -435,7 +435,7 @@ begin
          for i := tblbeg to tblend - 1 do readme.Delete(tblbeg);
 
          // add table header
-         line := '| day | version | %17s | %15s | time (ms)|'.Format(['part1', 'part2']);
+         line := '| day | version | %17s | %15s | time (s)|'.Format(['part1', 'part2']);
          readme.Insert(tblbeg, '  ' + line);
          for i := 1 to line.Length do
             if line[i] <> '|' then
@@ -486,7 +486,7 @@ begin
       end else begin
          readme.Insert(tblend, '');
          tblend += 1;
-         readme.Insert(tblend, '  Total time: %3.g ms'.Format([totalTime]));
+         readme.Insert(tblend, '  Total time: %3.g s'.Format([totalTime]));
          readme.SaveToFile('README.md');
       end;
    finally

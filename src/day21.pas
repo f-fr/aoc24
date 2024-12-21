@@ -31,9 +31,45 @@ type
 
    TNum = 0..10; // 10 means 'A'
 
-function ButtonToPos(but : TButton): TPos;
+   TButtonMappingClass = class of TButtonMapping;
+
+   TButtonMapping = class
+      class function ButtonToPos(but : Integer) : TPos; virtual; abstract;
+      class function TryPosToButton(pos : TPos; out but : Integer) : Boolean; virtual; abstract;
+      class function TryPress(var but : Integer; bctrl : TButton) : Boolean;
+   end;
+
+   TCtrlButtonMapping = class(TButtonMapping)
+      class function ButtonToPos(but : Integer) : TPos; override;
+      class function TryPosToButton(pos : TPos; out but : Integer) : Boolean; override;
+   end;
+
+   TNumButtonMapping = class(TButtonMapping)
+      class function ButtonToPos(but : Integer) : TPos; override;
+      class function TryPosToButton(pos : TPos; out but : Integer) : Boolean; override;
+   end;
+
+{ TButtonMapping }
+class function TButtonMapping.TryPress(var but : Integer; bctrl: TButton) : Boolean;
+var
+   p: TPos;
 begin
-   case but of
+   p := ButtonToPos(but);
+   result := True;
+   case bctrl of
+      bUp: p += Up;
+      bRight: p += Right;
+      bDown: p += Down;
+      bLeft: p += Left;
+      bAct: exit;
+   end;
+   result := TryPosToButton(p, but);
+end;
+
+{ TCtrlButtonMapping }
+class function TCtrlButtonMapping.ButtonToPos(but : Integer): TPos;
+begin
+   case TButton(but) of
       bUp: result := TPos.Create(0, 1);
       bRight: result := TPos.Create(1, 2);
       bDown: result := TPos.Create(1, 1);
@@ -42,9 +78,21 @@ begin
    end;
 end;
 
-function NumberToPos(num : TNum): TPos;
+class function TCtrlButtonMapping.TryPosToButton(pos : TPos; out but : Integer) : Boolean;
 begin
-   case num of
+   result := True;
+   if pos = TPos.Create(0, 1) then but := Integer(bUp)
+   else if pos = TPos.Create(0, 2) then but := Integer(bAct)
+   else if pos = TPos.Create(1, 0) then but := Integer(bLeft)
+   else if pos = TPos.Create(1, 1) then but := Integer(bDown)
+   else if pos = TPos.Create(1, 2) then but := Integer(bRight)
+   else result := false;
+end;
+
+{ TNumButtonMapping }
+class function TNumButtonMapping.ButtonToPos(but : Integer): TPos;
+begin
+   case TNum(but) of
       0: result := TPos.Create(3, 1);
       1: result := TPos.Create(2, 0);
       2: result := TPos.Create(2, 1);
@@ -59,53 +107,20 @@ begin
    end;
 end;
 
-function TryPress(var but : TButton; bctrl: TButton) : Boolean;
-var
-   p: TPos;
+class function TNumButtonMapping.TryPosToButton(pos : TPos; out but : Integer) : Boolean;
 begin
-   p := ButtonToPos(but);
    result := True;
-   case bctrl of
-      bUp: p += Up;
-      bRight: p += Right;
-      bDown: p += Down;
-      bLeft: p += Left;
-      bAct: exit;
-   end;
-
-   if p = TPos.Create(0, 1) then but := bUp
-   else if p = TPos.Create(0, 2) then but := bAct
-   else if p = TPos.Create(1, 0) then but := bLeft
-   else if p = TPos.Create(1, 1) then but := bDown
-   else if p = TPos.Create(1, 2) then but := bRight
-   else result := false;
-end;
-
-function TryPress(var num : TNum; bctrl: TButton) : Boolean;
-var
-   p: TPos;
-begin
-   p := NumberToPos(num);
-   result := True;
-   case bctrl of
-      bUp: p += Up;
-      bRight: p += Right;
-      bDown: p += Down;
-      bLeft: p += Left;
-      bAct: exit;
-   end;
-
-   if p = TPos.Create(3, 2) then num := 10
-   else if p = TPos.Create(0, 0) then num := 7
-   else if p = TPos.Create(0, 1) then num := 8
-   else if p = TPos.Create(0, 2) then num := 9
-   else if p = TPos.Create(1, 0) then num := 4
-   else if p = TPos.Create(1, 1) then num := 5
-   else if p = TPos.Create(1, 2) then num := 6
-   else if p = TPos.Create(2, 0) then num := 1
-   else if p = TPos.Create(2, 1) then num := 2
-   else if p = TPos.Create(2, 2) then num := 3
-   else if p = TPos.Create(3, 1) then num := 0
+   if pos = TPos.Create(3, 2) then but := 10
+   else if pos = TPos.Create(0, 0) then but := 7
+   else if pos = TPos.Create(0, 1) then but := 8
+   else if pos = TPos.Create(0, 2) then but := 9
+   else if pos = TPos.Create(1, 0) then but := 4
+   else if pos = TPos.Create(1, 1) then but := 5
+   else if pos = TPos.Create(1, 2) then but := 6
+   else if pos = TPos.Create(2, 0) then but := 1
+   else if pos = TPos.Create(2, 1) then but := 2
+   else if pos = TPos.Create(2, 2) then but := 3
+   else if pos = TPos.Create(3, 1) then but := 0
    else result := false;
 end;
 
@@ -114,33 +129,59 @@ type
    TCost = Int64;
    // the cost[b1,b2] of performing b2 immediately after b1
    TCosts = array[TButton, TButton] of TCost;
-
-   TNode = array[1..2] of TButton;
-   TNodeQueue = specialize TGPriQueue<TNode, TCost>;
-
-   TNumNode = record
-      pos: TNum;
+   TNode = record
+      pos: Integer;
       bctrl: TButton;
    end;
-   TNumNodeQueue = specialize TGPriQueue<TNumNode, TCost>;
+   TNodeQueue = specialize TGPriQueue<TNode, TCost>;
+
+var
+   q : TNodeQueue = nil;
+
+   function Solve(mapping: TButtonMappingClass;
+                  s_but, t_but : Integer; n: Integer; constref cost: TCosts) : Int64;
+   var
+      cur, nxt: TNode;
+      dists: array[0..10, TButton] of TCost;
+      i: Integer;
+      bctrl: TButton;
+      c, d: TCost;
+   begin
+      if s_but = t_but then exit(1);
+
+      q.Clear;
+      cur.pos := s_but;
+      cur.bctrl := bAct; // on the control level we start at 'A'
+      q.Push(cur, 0);
+      for i := 0 to n-1 do for bctrl in TButton do dists[i, bctrl] := High(TCost);
+      dists[s_but, bAct] := 0;
+      while q.TryPopMin(cur, d) do begin
+         if (cur.pos = t_but) and (cur.bctrl = bAct) then break;
+         for bctrl in TButton do begin
+            c := cost[cur.bctrl, bctrl]; // cost to press bctrl after cur[2]
+            nxt := cur;
+            if not mapping.TryPress(nxt.pos, bctrl) then continue;
+            nxt.bctrl := bctrl;
+            if d + c < dists[nxt.pos, nxt.bctrl] then begin
+               // found a better path to nxt
+               dists[nxt.pos, nxt.bctrl] := d +  c;
+               q.Push(nxt, d + c);
+            end;
+         end;
+      end;
+      result := dists[t_but, bAct];
+   end;
 
 var
    line: String;
    ch: Char;
 
    nxtcost, cost: TCosts;
-   b1, b2, bctrl, x1, x2: TButton;
+   b1, b2: TButton;
 
-   q: TNodeQueue = nil;
-   dists: TCosts;
-   cur, nxt: TNode;
+   s, t: TNum;
 
-   num_q: TNumNodeQueue = nil;
-   num_dists: array[TNum, TButton] of Int64;
-   num_cur, num_nxt: TNumNode;
-   t: TNum;
-
-   c, d, sum: TCost;
+   sum: TCost;
 
    k: Integer;
 
@@ -152,37 +193,12 @@ begin
       for b1 in TButton do for b2 in TButton do cost[b1, b2] := 1;
 
       q := TNodeQueue.Create;
-      num_q := TNumNodeQueue.Create;
 
       for k := 1 to 25 do begin
          // for the next level, we use dijkstra to compute the shortest sequence
-         for b1 in TButton do for b2 in TButton do nxtcost[b1, b2] := High(TCost);
-
-         for b1 in TButton do begin
-            for b2 in TButton do begin
-               q.Clear;
-               cur[1] := b1;
-               cur[2] := bAct; // on the control level we start at 'A'
-               q.Push(cur, 0);
-               for x1 in TButton do for x2 in TButton do dists[x1, x2] := High(TCost);
-               dists[b1, bAct] := 1;
-               while q.TryPopMin(cur, d) do begin
-                  if (cur[1] = b2) and (cur[2] = bAct) then break;
-                  for bctrl in TButton do begin
-                     c := cost[cur[2], bctrl]; // cost to press bctrl after cur[2]
-                     nxt := cur;
-                     if not TryPress(nxt[1], bctrl) then continue;
-                     nxt[2] := bctrl;
-                     if d + c < dists[nxt[1], nxt[2]] then begin
-                        // found a better path nxt
-                        dists[nxt[1], nxt[2]] := d +  c;
-                        q.Push(nxt, d + c);
-                     end;
-                  end;
-               end;
-               nxtcost[b1, b2] := dists[b2, bAct];
-            end;
-         end;
+         for b1 in TButton do 
+            for b2 in TButton do 
+               nxtcost[b1, b2] := Solve(TCtrlButtonMapping, Ord(b1), Ord(b2), Ord(High(TButton)) - Ord(Low(TButton)) + 1, cost);
          cost := nxtcost;
 
          if not ((k = 2) or (k = 25)) then continue;
@@ -191,8 +207,7 @@ begin
          // of numbers of the input
          for line in input do begin
             sum := 0;
-            num_cur.pos := 10; // 'A'
-            num_cur.bctrl := bAct; // on the control level we start at 'A'
+            s := 10; // 'A'
             for ch in line do begin
                case ch of
                   '0'..'9': t := Ord(ch) - Ord('0');
@@ -200,31 +215,8 @@ begin
                else
                   raise Exception.CreateFmt('Invalid number %c', [ch]);
                end;
-
-               num_q.Clear;
-               num_q.Push(num_cur, 0);
-               for d in TNum do for x2 in TButton do num_dists[d, x2] := High(Int64);
-               num_dists[num_cur.pos, num_cur.bctrl] := 0;
-               while num_q.TryPopMin(num_cur, d) do begin
-                  if (num_cur.pos = t) and (num_cur.bctrl = bAct) then begin
-                     // found the target, not that `num_cur` *is* the start node for
-                     // the next stop
-                     sum += d;
-                     break;
-                  end;
-
-                  for bctrl in TButton do begin
-                     c := cost[num_cur.bctrl, bctrl]; // cost to press bctrl after cur.bctrl
-                     num_nxt := num_cur;
-                     if not TryPress(num_nxt.pos, bctrl) then continue;
-                     num_nxt.bctrl := bctrl;
-                     if d + c < num_dists[num_nxt.pos, num_nxt.bctrl] then begin
-                        // found a better path to num_nxt
-                        num_dists[num_nxt.pos, num_nxt.bctrl] := d + c;
-                        num_q.Push(num_nxt, d + c);
-                     end;
-                  end;
-               end;
+               sum += Solve(TNumButtonMapping, s, t, Ord(High(TNum)) - Ord(Low(TNum)) + 1, cost);
+               s := t;
             end;
 
             if k = 2 then
@@ -238,7 +230,6 @@ begin
       result[2] := part2;
    finally
       q.Free;
-      num_q.Free;
    end
 end;
 

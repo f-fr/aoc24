@@ -24,21 +24,12 @@ interface
 
 implementation
 
-uses AOC, AOC.Generic, SysUtils, Classes, StreamEx, generics.collections, priqueue;
+uses AOC, AOC.Generic, SysUtils, Classes, priqueue;
 
 type     
    TButton = (bUp, bRight, bDown, bLeft, bAct);
 
-function TryButtonOf(pos : TPos; out but : TButton) : Boolean;
-begin
-   result := true;
-   if pos = TPos.Create(0, 1) then but := bUp
-   else if pos = TPos.Create(0, 2) then but := bAct
-   else if pos = TPos.Create(1, 0) then but := bLeft
-   else if pos = TPos.Create(1, 1) then but := bDown
-   else if pos = TPos.Create(1, 2) then but := bRight
-   else result := false;
-end;
+   TNum = 0..10; // 10 means 'A'
 
 function ButtonToPos(but : TButton): TPos;
 begin
@@ -51,22 +42,20 @@ begin
    end;
 end;
 
-function NumberToPos(num : Char): TPos;
+function NumberToPos(num : TNum): TPos;
 begin
    case num of
-      '0': result := TPos.Create(3, 1);
-      '1': result := TPos.Create(2, 0);
-      '2': result := TPos.Create(2, 1);
-      '3': result := TPos.Create(2, 2);
-      '4': result := TPos.Create(1, 0);
-      '5': result := TPos.Create(1, 1);
-      '6': result := TPos.Create(1, 2);
-      '7': result := TPos.Create(0, 0);
-      '8': result := TPos.Create(0, 1);
-      '9': result := TPos.Create(0, 2);
-      'A': result := TPos.Create(3, 2);
-   else
-      raise Exception.CreateFmt('Invalid number: %c', [num]);
+      0: result := TPos.Create(3, 1);
+      1: result := TPos.Create(2, 0);
+      2: result := TPos.Create(2, 1);
+      3: result := TPos.Create(2, 2);
+      4: result := TPos.Create(1, 0);
+      5: result := TPos.Create(1, 1);
+      6: result := TPos.Create(1, 2);
+      7: result := TPos.Create(0, 0);
+      8: result := TPos.Create(0, 1);
+      9: result := TPos.Create(0, 2);
+      10: result := TPos.Create(3, 2);
    end;
 end;
 
@@ -84,14 +73,19 @@ begin
       bAct: exit;
    end;
 
-   result := TryButtonOf(p, but);
+   if p = TPos.Create(0, 1) then but := bUp
+   else if p = TPos.Create(0, 2) then but := bAct
+   else if p = TPos.Create(1, 0) then but := bLeft
+   else if p = TPos.Create(1, 1) then but := bDown
+   else if p = TPos.Create(1, 2) then but := bRight
+   else result := false;
 end;
 
-function TryPress(var pos : TPos; bctrl: TButton) : Boolean;
+function TryPress(var num : TNum; bctrl: TButton) : Boolean;
 var
    p: TPos;
 begin
-   p := pos;
+   p := NumberToPos(num);
    result := True;
    case bctrl of
       bUp: p += Up;
@@ -101,8 +95,18 @@ begin
       bAct: exit;
    end;
 
-   result := (p.i >= 0) and (p.i <= 3) and (p.j >= 0) and (p.j <= 2) and (p <> TPos.Create(3,0));
-   if result then pos := p;
+   if p = TPos.Create(3, 2) then num := 10
+   else if p = TPos.Create(0, 0) then num := 7
+   else if p = TPos.Create(0, 1) then num := 8
+   else if p = TPos.Create(0, 2) then num := 9
+   else if p = TPos.Create(1, 0) then num := 4
+   else if p = TPos.Create(1, 1) then num := 5
+   else if p = TPos.Create(1, 2) then num := 6
+   else if p = TPos.Create(2, 0) then num := 1
+   else if p = TPos.Create(2, 1) then num := 2
+   else if p = TPos.Create(2, 2) then num := 3
+   else if p = TPos.Create(3, 1) then num := 0
+   else result := false;
 end;
 
 function Run(input: TStrings): TResult;
@@ -115,10 +119,9 @@ type
    TNodeQueue = specialize TGPriQueue<TNode, TCost>;
 
    TNumNode = record
-      pos: TPos;
+      pos: TNum;
       bctrl: TButton;
    end;
-   TNumDistDict = specialize TDictionary<TNumNode, TCost>;
    TNumNodeQueue = specialize TGPriQueue<TNumNode, TCost>;
 
 var
@@ -133,11 +136,11 @@ var
    cur, nxt: TNode;
 
    num_q: TNumNodeQueue = nil;
-   num_dists: TNumDistDict = nil;
+   num_dists: array[TNum, TButton] of Int64;
    num_cur, num_nxt: TNumNode;
-   t: TPos;
+   t: TNum;
 
-   c, d, dnxt, sum: TCost;
+   c, d, sum: TCost;
 
    k: Integer;
 
@@ -150,7 +153,6 @@ begin
 
       q := TNodeQueue.Create;
       num_q := TNumNodeQueue.Create;
-      num_dists := TNumDistDict.Create;
 
       for k := 1 to 25 do begin
          // for the next level, we use dijkstra to compute the shortest sequence
@@ -189,15 +191,20 @@ begin
          // of numbers of the input
          for line in input do begin
             sum := 0;
-            num_cur.pos := TPos.Create(3, 2);
+            num_cur.pos := 10; // 'A'
             num_cur.bctrl := bAct; // on the control level we start at 'A'
             for ch in line do begin
-               t := NumberToPos(ch);
+               case ch of
+                  '0'..'9': t := Ord(ch) - Ord('0');
+                  'A': t := 10;
+               else
+                  raise Exception.CreateFmt('Invalid number %c', [ch]);
+               end;
 
                num_q.Clear;
                num_q.Push(num_cur, 0);
-               num_dists.Clear;
-               num_dists.Add(num_cur, 0);
+               for d in TNum do for x2 in TButton do num_dists[d, x2] := High(Int64);
+               num_dists[num_cur.pos, num_cur.bctrl] := 0;
                while num_q.TryPopMin(num_cur, d) do begin
                   if (num_cur.pos = t) and (num_cur.bctrl = bAct) then begin
                      // found the target, not that `num_cur` *is* the start node for
@@ -211,9 +218,9 @@ begin
                      num_nxt := num_cur;
                      if not TryPress(num_nxt.pos, bctrl) then continue;
                      num_nxt.bctrl := bctrl;
-                     if (not num_dists.TryGetValue(num_nxt, dnxt)) or (d + c < dnxt) then begin
+                     if d + c < num_dists[num_nxt.pos, num_nxt.bctrl] then begin
                         // found a better path to num_nxt
-                        num_dists.AddOrSetValue(num_nxt, d + c);
+                        num_dists[num_nxt.pos, num_nxt.bctrl] := d + c;
                         num_q.Push(num_nxt, d + c);
                      end;
                   end;
@@ -232,7 +239,6 @@ begin
    finally
       q.Free;
       num_q.Free;
-      num_dists.Free;
    end
 end;
 

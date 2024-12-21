@@ -112,7 +112,6 @@ type
    TCosts = array[TButton, TButton] of TCost;
 
    TNode = array[1..2] of TButton;
-   TDistDict = specialize TDictionary<TNode, TCost>;
    TNodeQueue = specialize TGPriQueue<TNode, TCost>;
 
    TNumNode = record
@@ -127,10 +126,10 @@ var
    ch: Char;
 
    nxtcost, cost: TCosts;
-   b1, b2, bctrl: TButton;
+   b1, b2, bctrl, x1, x2: TButton;
 
    q: TNodeQueue = nil;
-   dists: TDistDict = nil;
+   dists: TCosts;
    cur, nxt: TNode;
 
    num_q: TNumNodeQueue = nil;
@@ -150,7 +149,6 @@ begin
       for b1 in TButton do for b2 in TButton do cost[b1, b2] := 1;
 
       q := TNodeQueue.Create;
-      dists := TDistDict.Create;
       num_q := TNumNodeQueue.Create;
       num_dists := TNumDistDict.Create;
 
@@ -164,8 +162,8 @@ begin
                cur[1] := b1;
                cur[2] := bAct; // on the control level we start at 'A'
                q.Push(cur, 0);
-               dists.Clear;
-               dists.Add(cur, 1);
+               for x1 in TButton do for x2 in TButton do dists[x1, x2] := High(TCost);
+               dists[b1, bAct] := 1;
                while q.TryPopMin(cur, d) do begin
                   if (cur[1] = b2) and (cur[2] = bAct) then break;
                   for bctrl in TButton do begin
@@ -173,14 +171,14 @@ begin
                      nxt := cur;
                      if not TryPress(nxt[1], bctrl) then continue;
                      nxt[2] := bctrl;
-                     if (not dists.TryGetValue(nxt, dnxt)) or (d + c < dnxt) then begin
+                     if d + c < dists[nxt[1], nxt[2]] then begin
                         // found a better path nxt
-                        dists.AddOrSetValue(nxt, d + c);
+                        dists[nxt[1], nxt[2]] := d +  c;
                         q.Push(nxt, d + c);
                      end;
                   end;
                end;
-               nxtcost[b1, b2] := dists[cur];
+               nxtcost[b1, b2] := dists[b2, bAct];
             end;
          end;
          cost := nxtcost;
@@ -233,7 +231,6 @@ begin
       result[2] := part2;
    finally
       q.Free;
-      dists.Free;
       num_q.Free;
       num_dists.Free;
    end

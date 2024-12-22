@@ -82,8 +82,7 @@ begin
          part1 += x;
       end;
 
-      for sum in prices.Values do
-         part2 := Max(part2, sum);
+      for x in prices.Values do part2 := Max(part2, x);
 
       result[1] := part1;
       result[2] := part2;

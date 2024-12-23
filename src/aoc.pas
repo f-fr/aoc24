@@ -49,15 +49,18 @@ type
 
    private
       Fnames: TNamesDict;
+      Fid2name: TStringList;
 
    private
       function GetOrAddName(const AName: String): Cardinal; inline;
       function GetCount: Cardinal; inline;
+      function GetName(u: Cardinal): String;
 
    public
       constructor Create;
       destructor Destroy; override;
 
+      property Names[u: Cardinal]: String read GetName;
       property Items[AName: String]: Cardinal read GetOrAddName; default;
       property Count: Cardinal read GetCount;
    end;
@@ -166,11 +169,13 @@ constructor TNamesBag.Create;
 begin
    inherited;
    Fnames := TNamesDict.Create;
+   Fid2name := TStringList.Create;
 end;
 
 destructor TNamesBag.Destroy;
 begin
    Fnames.Free;
+   Fid2name.Free;
    inherited;
 end;
 
@@ -179,6 +184,12 @@ begin
    if Fnames.TryGetValue(AName, result) then exit;
    result := Fnames.Count;
    Fnames.Add(AName, result);
+   Fid2name.Add(AName);
+end;
+
+function TNamesBag.GetName(u: Cardinal): String;
+begin
+   result := Fid2name[u];
 end;
 
 function TNamesBag.GetCount: Cardinal;

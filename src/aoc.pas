@@ -52,12 +52,14 @@ type
 
    private
       function GetOrAddName(const AName: String): Cardinal; inline;
+      function GetCount: Cardinal; inline;
 
    public
       constructor Create;
       destructor Destroy; override;
 
       property Items[AName: String]: Cardinal read GetOrAddName; default;
+      property Count: Cardinal read GetCount;
    end;
 
    TDir = Aoc.Generic.TDir;
@@ -177,6 +179,11 @@ begin
    if Fnames.TryGetValue(AName, result) then exit;
    result := Fnames.Count;
    Fnames.Add(AName, result);
+end;
+
+function TNamesBag.GetCount: Cardinal;
+begin
+   result := Fnames.Count;
 end;
 
 { TDirHelper }
